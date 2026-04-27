@@ -1,0 +1,83 @@
+{
+  "1": [
+    {
+      "id": "q1_1",
+      "text": "What does HTML stand for?",
+      "options": ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Markup Language", "Hyper Tool Markup Language"],
+      "correct": "Hyper Text Markup Language"
+    },
+    {
+      "id": "q1_2",
+      "text": "Which of the following is not a JavaScript data type?",
+      "options": ["Undefined", "Number", "Boolean", "Float"],
+      "correct": "Float"
+    },
+    {
+      "id": "q1_3",
+      "text": "What is the correct CSS syntax to change the background color of a page?",
+      "options": ["body {background-color: yellow;}", "body:color=yellow;", "all {background-color: yellow;}", "background-color: yellow;"],
+      "correct": "body {background-color: yellow;}"
+    },
+    {
+      "id": "q1_4",
+      "text": "How do you write 'Hello World' in an alert box in JS?",
+      "options": ["msgBox('Hello World');", "alertBox('Hello World');", "msg('Hello World');", "alert('Hello World');"],
+      "correct": "alert('Hello World');"
+    },
+    {
+      "id": "q1_5",
+      "text": "Which HTML tag is used to define an internal style sheet?",
+      "options": ["<css>", "<style>", "<script>", "<link>"],
+      "correct": "<style>"
+    }
+  ],
+  "2": [
+    {
+      "id": "q2_1",
+      "text": "What company is represented by this logo?",
+      "image": "/images/logo1.png",
+      "options": ["Google", "Microsoft", "Apple", "Amazon"],
+      "correct": "Google"
+    },
+    {
+      "id": "q2_2",
+      "text": "Identify this programming language from its logo.",
+      "image": "/images/logo2.png",
+      "options": ["Python", "JavaScript", "Java", "Ruby"],
+      "correct": "JavaScript"
+    },
+    {
+      "id": "q2_3",
+      "text": "Which cloud provider uses this icon?",
+      "image": "/images/logo3.png",
+      "options": ["AWS", "Azure", "Google Cloud", "DigitalOcean"],
+      "correct": "AWS"
+    }
+  ],
+  "3": [
+    {
+      "id": "q3_1",
+      "text": "In JavaScript, '===' checks for both value and type equality.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_2",
+      "text": "CSS grids are one-dimensional layout systems.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_3",
+      "text": "Node.js is a frontend web framework.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_4",
+      "text": "An array in JavaScript can hold elements of different data types.",
+      "options": ["True", "False"],
+      "correct": "True"
+    }
+  ]
+}

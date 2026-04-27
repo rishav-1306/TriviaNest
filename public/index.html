@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Quiz App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app" class="container">
+        
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen login-container">
+            <div class="login-left">
+                <div class="login-card">
+                    <h1>Quiz Competition</h1>
+                    <p id="round-indicator">Round 1</p>
+                    <form id="login-form">
+                        <div class="input-group">
+                            <label for="team-name">Team Name</label>
+                            <input type="text" id="team-name" required placeholder="Enter team name">
+                        </div>
+                        <div class="input-group">
+                            <label for="participant-name">Participant Name</label>
+                            <input type="text" id="participant-name" required placeholder="Enter your name">
+                        </div>
+                        <div class="input-group">
+                            <label for="secret-code">Secret Code</label>
+                            <input type="password" id="secret-code" required placeholder="Enter secret code">
+                        </div>
+                        <button type="submit" class="btn btn-blue">Start Round</button>
+                    </form>
+                    <p id="login-error" class="error"></p>
+                </div>
+            </div>
+            <div class="login-right">
+                <img src="gdg_triviaNest.png" alt="GDG TriviaNest" class="hero-image">
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen hidden">
+            <div class="watermark">GDGOC | ITER</div>
+            <div class="header">
+                <span id="quiz-progress">Question 1/10</span>
+                <span id="quiz-timer">Time: 60s</span>
+            </div>
+            
+            <div id="question-container">
+                <h2 id="question-text">Question Text Here</h2>
+                <img id="question-image" class="hidden" src="" alt="Question Image">
+                <div id="options-container" class="options-grid">
+                    <!-- Options injected via JS -->
+                </div>
+            </div>
+            
+            <div class="footer">
+                <button id="next-btn" class="btn btn-green">Next</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen hidden">
+            <h1>Round Complete!</h1>
+            <div class="result-stats">
+                <p>Score: <span id="result-score"></span></p>
+                <p>Time Taken: <span id="result-time"></span> seconds</p>
+            </div>
+            <button id="next-round-btn" class="btn btn-yellow">Prepare for Next Round</button>
+            <p id="finish-msg" class="hidden">Congratulations! You have completed all rounds.</p>
+        </div>
+        
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
