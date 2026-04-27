@@ -77,11 +77,11 @@
 
     <script>
         async function fetchResults() {
-            const secret = document.getElementById('admin-secret').value;
+            const secret = document.getElementById('admin-secret').value.trim();
             if (!secret) return alert('Please enter secret code');
             
             try {
-                const res = await fetch(`/api/admin/results?secret=${secret}`);
+                const res = await fetch(`/api/admin/results?secret=${encodeURIComponent(secret)}`);
                 if (!res.ok) throw new Error('Unauthorized or error');
                 
                 const data = await res.json();
@@ -109,16 +109,17 @@
         }
 
         function downloadExcel() {
-            const secret = document.getElementById('admin-secret').value;
+            const secret = document.getElementById('admin-secret').value.trim();
             if (!secret) return alert('Please enter secret code');
-            window.location.href = `/api/admin/download-excel?secret=${secret}`;
+            window.location.href = `/api/admin/download-excel?secret=${encodeURIComponent(secret)}`;
         }
 
         function downloadCSV() {
-            const secret = document.getElementById('admin-secret').value;
+            const secret = document.getElementById('admin-secret').value.trim();
             if (!secret) return alert('Please enter secret code');
-            window.location.href = `/api/admin/download-csv?secret=${secret}`;
+            window.location.href = `/api/admin/download-csv?secret=${encodeURIComponent(secret)}`;
         }
+
     </script>
 </body>
 </html>

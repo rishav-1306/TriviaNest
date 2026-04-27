@@ -1,8 +1,8 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
-const path = require('path');
 const fs = require('fs');
 const xlsx = require('xlsx');
 const helmet = require('helmet');
@@ -11,8 +11,9 @@ const compression = require('compression');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-const SECRET_CODE = process.env.SECRET_CODE || 'SECRET123';
+const SECRET_CODE = (process.env.SECRET_CODE || 'SECRET123').trim();
 const SESSION_SECRET = process.env.SESSION_SECRET || 'quiz-default-secret-key';
+
 const DATA_DIR = path.join(__dirname, '../data');
 const EXCEL_FILE = path.join(DATA_DIR, 'results.xlsx');
 const CSV_FILE = path.join(DATA_DIR, 'results.csv');
@@ -76,7 +77,8 @@ const writeQueue = [];
 app.post('/api/login', (req, res) => {
     const { teamName, participantName, secretCode, round } = req.body;
 
-    if (secretCode !== SECRET_CODE) {
+    if (!secretCode || secretCode.trim() !== SECRET_CODE) {
+        console.log(`[Login] Failed login attempt for team: ${teamName}`);
         return res.status(401).json({ error: 'Invalid secret code' });
     }
     if (!teamName) {
@@ -248,35 +250,43 @@ setInterval(() => {
 // API Endpoints for Admin (Download Results)
 app.get('/api/admin/results', (req, res) => {
     const { secret } = req.query;
-    if (secret !== SECRET_CODE) {
+    if (!secret || secret.trim() !== SECRET_CODE) {
+        console.warn(`[Admin] Unauthorized results access attempt with secret: ${secret}`);
         return res.status(401).json({ error: 'Unauthorized' });
     }
+    console.log(`[Admin] Results fetched. Count: ${allResults.length}`);
     res.json(allResults);
 });
 
 app.get('/api/admin/download-excel', (req, res) => {
     const { secret } = req.query;
-    if (secret !== SECRET_CODE) {
+    if (!secret || secret.trim() !== SECRET_CODE) {
+        console.warn(`[Admin] Unauthorized excel download attempt`);
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
     try {
         const workbook = xlsx.utils.book_new();
-        const worksheet = xlsx.utils.json_to_sheet(allResults);
+        // If empty, create a dummy row so the file isn't corrupted
+        const dataToSheet = allResults.length > 0 ? allResults : [{ Message: 'No submissions yet' }];
+        const worksheet = xlsx.utils.json_to_sheet(dataToSheet);
         xlsx.utils.book_append_sheet(workbook, worksheet, 'Results');
         const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
         
+        console.log(`[Admin] Excel download initiated. Rows: ${allResults.length}`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=results.xlsx');
         res.send(buffer);
     } catch (e) {
+        console.error('[Admin] Excel generation error:', e);
         res.status(500).send('Error generating Excel file');
     }
 });
 
 app.get('/api/admin/download-csv', (req, res) => {
     const { secret } = req.query;
-    if (secret !== SECRET_CODE) {
+    if (!secret || secret.trim() !== SECRET_CODE) {
+        console.warn(`[Admin] Unauthorized csv download attempt`);
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -289,10 +299,12 @@ app.get('/api/admin/download-csv', (req, res) => {
         Object.values(row).map(val => `"${val}"`).join(',')
     ).join('\n');
     
+    console.log(`[Admin] CSV download initiated. Rows: ${allResults.length}`);
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=results.csv');
     res.send(headers + '\n' + rows);
 });
+
 
 // Start server
 app.listen(PORT, () => {
