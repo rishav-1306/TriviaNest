@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
@@ -8,6 +9,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 const SECRET_CODE = process.env.SECRET_CODE || 'SECRET123';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'quiz-default-secret-key';
@@ -243,7 +245,58 @@ setInterval(() => {
     }
 }, 5000); // Sync every 5 seconds
 
+// API Endpoints for Admin (Download Results)
+app.get('/api/admin/results', (req, res) => {
+    const { secret } = req.query;
+    if (secret !== SECRET_CODE) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    res.json(allResults);
+});
+
+app.get('/api/admin/download-excel', (req, res) => {
+    const { secret } = req.query;
+    if (secret !== SECRET_CODE) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const workbook = xlsx.utils.book_new();
+        const worksheet = xlsx.utils.json_to_sheet(allResults);
+        xlsx.utils.book_append_sheet(workbook, worksheet, 'Results');
+        const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=results.xlsx');
+        res.send(buffer);
+    } catch (e) {
+        res.status(500).send('Error generating Excel file');
+    }
+});
+
+app.get('/api/admin/download-csv', (req, res) => {
+    const { secret } = req.query;
+    if (secret !== SECRET_CODE) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (allResults.length === 0) {
+        return res.status(404).send('No results yet');
+    }
+
+    const headers = Object.keys(allResults[0]).join(',');
+    const rows = allResults.map(row => 
+        Object.values(row).map(val => `"${val}"`).join(',')
+    ).join('\n');
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=results.csv');
+    res.send(headers + '\n' + rows);
+});
+
 // Start server
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
+    console.log(`Admin Download URL: /api/admin/download-excel?secret=${SECRET_CODE}`);
 });
+

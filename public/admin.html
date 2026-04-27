@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Quiz Results</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .admin-card {
+            padding: 20px;
+            text-align: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-card">
+            <h1>Admin Dashboard</h1>
+            <p>Enter the secret code to view and download results.</p>
+            
+            <div class="input-group">
+                <input type="password" id="admin-secret" placeholder="Enter Secret Code">
+            </div>
+            
+            <div class="btn-group">
+                <button onclick="fetchResults()" class="btn btn-blue">View Results</button>
+                <button onclick="downloadExcel()" class="btn btn-green">Download Excel</button>
+                <button onclick="downloadCSV()" class="btn btn-yellow">Download CSV</button>
+            </div>
+            
+            <div id="results-table-container">
+                <table id="results-table">
+                    <thead>
+                        <tr>
+                            <th>Team</th>
+                            <th>Round</th>
+                            <th>Score</th>
+                            <th>Time</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body">
+                        <!-- Data will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchResults() {
+            const secret = document.getElementById('admin-secret').value;
+            if (!secret) return alert('Please enter secret code');
+            
+            try {
+                const res = await fetch(`/api/admin/results?secret=${secret}`);
+                if (!res.ok) throw new Error('Unauthorized or error');
+                
+                const data = await res.json();
+                const body = document.getElementById('results-body');
+                body.innerHTML = '';
+                
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row['Team Name']}</td>
+                        <td>${row['Round Number']}</td>
+                        <td>${row['Score']}</td>
+                        <td>${row['Time Taken (s)']}s</td>
+                        <td>${new Date(row['Timestamp']).toLocaleString()}</td>
+                    `;
+                    body.appendChild(tr);
+                });
+                
+                if (data.length === 0) {
+                    body.innerHTML = '<tr><td colspan="5">No results found yet.</td></tr>';
+                }
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        function downloadExcel() {
+            const secret = document.getElementById('admin-secret').value;
+            if (!secret) return alert('Please enter secret code');
+            window.location.href = `/api/admin/download-excel?secret=${secret}`;
+        }
+
+        function downloadCSV() {
+            const secret = document.getElementById('admin-secret').value;
+            if (!secret) return alert('Please enter secret code');
+            window.location.href = `/api/admin/download-csv?secret=${secret}`;
+        }
+    </script>
+</body>
+</html>
