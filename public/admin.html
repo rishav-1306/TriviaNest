@@ -38,6 +38,10 @@
         th {
             background-color: #f8f9fa;
         }
+        .error-msg {
+            color: var(--google-red, red);
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -51,10 +55,11 @@
             </div>
             
             <div class="btn-group">
-                <button onclick="fetchResults()" class="btn btn-blue">View Results</button>
-                <button onclick="downloadExcel()" class="btn btn-green">Download Excel</button>
-                <button onclick="downloadCSV()" class="btn btn-yellow">Download CSV</button>
+                <button id="view-btn" class="btn btn-blue">View Results</button>
+                <button id="excel-btn" class="btn btn-green">Download Excel</button>
+                <button id="csv-btn" class="btn btn-yellow">Download CSV</button>
             </div>
+            <p id="admin-error" class="error-msg"></p>
             
             <div id="results-table-container">
                 <table id="results-table">
@@ -76,50 +81,68 @@
     </div>
 
     <script>
-        async function fetchResults() {
-            const secret = document.getElementById('admin-secret').value.trim();
-            if (!secret) return alert('Please enter secret code');
-            
-            try {
-                const res = await fetch(`/api/admin/results?secret=${encodeURIComponent(secret)}`);
-                if (!res.ok) throw new Error('Unauthorized or error');
+        document.addEventListener('DOMContentLoaded', () => {
+            const secretInput = document.getElementById('admin-secret');
+            const viewBtn = document.getElementById('view-btn');
+            const excelBtn = document.getElementById('excel-btn');
+            const csvBtn = document.getElementById('csv-btn');
+            const errorMsg = document.getElementById('admin-error');
+            const resultsBody = document.getElementById('results-body');
+
+            async function fetchResults() {
+                const secret = secretInput.value.trim();
+                if (!secret) return alert('Please enter secret code');
                 
-                const data = await res.json();
-                const body = document.getElementById('results-body');
-                body.innerHTML = '';
+                errorMsg.textContent = '';
+                resultsBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
                 
-                data.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${row['Team Name']}</td>
-                        <td>${row['Round Number']}</td>
-                        <td>${row['Score']}</td>
-                        <td>${row['Time Taken (s)']}s</td>
-                        <td>${new Date(row['Timestamp']).toLocaleString()}</td>
-                    `;
-                    body.appendChild(tr);
-                });
-                
-                if (data.length === 0) {
-                    body.innerHTML = '<tr><td colspan="5">No results found yet.</td></tr>';
+                try {
+                    const res = await fetch(`/api/admin/results?secret=${encodeURIComponent(secret)}`);
+                    if (!res.ok) {
+                        const data = await res.json();
+                        throw new Error(data.error || 'Unauthorized or error');
+                    }
+                    
+                    const data = await res.json();
+                    resultsBody.innerHTML = '';
+                    
+                    data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${row['Team Name'] || 'N/A'}</td>
+                            <td>${row['Round Number'] || 'N/A'}</td>
+                            <td>${row['Score'] || '0'}</td>
+                            <td>${row['Time Taken (s)'] || '0'}s</td>
+                            <td>${row['Timestamp'] ? new Date(row['Timestamp']).toLocaleString() : 'N/A'}</td>
+                        `;
+                        resultsBody.appendChild(tr);
+                    });
+                    
+                    if (data.length === 0) {
+                        resultsBody.innerHTML = '<tr><td colspan="5">No results found yet.</td></tr>';
+                    }
+                } catch (e) {
+                    errorMsg.textContent = e.message;
+                    resultsBody.innerHTML = '<tr><td colspan="5">Error loading results.</td></tr>';
                 }
-            } catch (e) {
-                alert(e.message);
             }
-        }
 
-        function downloadExcel() {
-            const secret = document.getElementById('admin-secret').value.trim();
-            if (!secret) return alert('Please enter secret code');
-            window.location.href = `/api/admin/download-excel?secret=${encodeURIComponent(secret)}`;
-        }
+            function downloadExcel() {
+                const secret = secretInput.value.trim();
+                if (!secret) return alert('Please enter secret code');
+                window.location.href = `/api/admin/download-excel?secret=${encodeURIComponent(secret)}`;
+            }
 
-        function downloadCSV() {
-            const secret = document.getElementById('admin-secret').value.trim();
-            if (!secret) return alert('Please enter secret code');
-            window.location.href = `/api/admin/download-csv?secret=${encodeURIComponent(secret)}`;
-        }
+            function downloadCSV() {
+                const secret = secretInput.value.trim();
+                if (!secret) return alert('Please enter secret code');
+                window.location.href = `/api/admin/download-csv?secret=${encodeURIComponent(secret)}`;
+            }
 
+            viewBtn.addEventListener('click', fetchResults);
+            excelBtn.addEventListener('click', downloadExcel);
+            csvBtn.addEventListener('click', downloadCSV);
+        });
     </script>
 </body>
 </html>
