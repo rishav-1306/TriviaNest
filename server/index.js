@@ -7,6 +7,7 @@ const fs = require('fs');
 const xlsx = require('xlsx');
 const helmet = require('helmet');
 const compression = require('compression');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -14,26 +15,34 @@ const PORT = process.env.PORT || 3000;
 const SECRET_CODE = (process.env.SECRET_CODE || 'SECRET123').trim();
 const SESSION_SECRET = process.env.SESSION_SECRET || 'quiz-default-secret-key';
 
-const DATA_DIR = path.join(__dirname, '../data');
-const EXCEL_FILE = path.join(DATA_DIR, 'results.xlsx');
-const CSV_FILE = path.join(DATA_DIR, 'results.csv');
+// Connect to MongoDB
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/gdg_quiz';
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
-// In-memory cache for results to handle high concurrency
-let allResults = [];
+const resultSchema = new mongoose.Schema({
+    teamName: String,
+    participantName: String,
+    roundNumber: Number,
+    score: Number,
+    timeTaken: Number,
+    timestamp: { type: Date, default: Date.now }
+});
+const Result = mongoose.model('Result', resultSchema);
 
 // Load questions
 const questionsData = JSON.parse(fs.readFileSync(path.join(__dirname, 'questions.json'), 'utf-8'));
 
-// Load existing results into memory at startup
-if (fs.existsSync(EXCEL_FILE)) {
-    try {
-        const workbook = xlsx.readFile(EXCEL_FILE);
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        allResults = xlsx.utils.sheet_to_json(worksheet);
-        console.log(`Loaded ${allResults.length} existing results from Excel.`);
-    } catch (e) {
-        console.error("Failed to load existing Excel data:", e);
-    }
+function transformResult(doc) {
+    return {
+        'Team Name': doc.teamName,
+        'Participant Name': doc.participantName,
+        'Round Number': doc.roundNumber,
+        'Score': doc.score,
+        'Time Taken (s)': doc.timeTaken,
+        'Timestamp': doc.timestamp ? doc.timestamp.toISOString() : new Date().toISOString()
+    };
 }
 
 // Middleware
@@ -67,9 +76,6 @@ function shuffle(array) {
     }
     return array;
 }
-
-// Queue for writing to Excel
-const writeQueue = [];
 
 // API Endpoints
 
@@ -185,15 +191,15 @@ app.post('/api/submit', (req, res) => {
         }
     }
 
-    // Queue data for Excel
-    writeQueue.push({
-        'Team Name': req.session.teamName,
-        'Participant Name': req.session.participantName,
-        'Round Number': parseInt(currentRound),
-        'Score': score,
-        'Time Taken (s)': timeTaken.toFixed(2),
-        'Timestamp': new Date().toISOString()
+    // Save to MongoDB
+    const resultDoc = new Result({
+        teamName: req.session.teamName,
+        participantName: req.session.participantName,
+        roundNumber: parseInt(currentRound),
+        score: score,
+        timeTaken: parseFloat(timeTaken.toFixed(2))
     });
+    resultDoc.save().catch(err => console.error('Error saving result to MongoDB:', err));
 
     // Mark round as submitted
     req.session.submittedRounds.push(currentRound);
@@ -206,59 +212,24 @@ app.post('/api/submit', (req, res) => {
     });
 });
 
-// Background task to write queue to Excel and CSV safely
-setInterval(() => {
-    if (writeQueue.length === 0) return;
-
-    // Drain current items from queue
-    const itemsToWrite = writeQueue.splice(0, writeQueue.length);
-    
-    // Add to in-memory cache
-    allResults.push(...itemsToWrite);
-    
-    try {
-        if (!fs.existsSync(DATA_DIR)) {
-            fs.mkdirSync(DATA_DIR, { recursive: true });
-        }
-
-        // 1. FAST PERSISTENCE: Append to CSV (Safe, even if Excel is open)
-        const csvHeader = 'Team Name,Participant Name,Round Number,Score,Time Taken (s),Timestamp\n';
-        const csvRows = itemsToWrite.map(item => 
-            `"${item['Team Name']}","${item['Participant Name']}","${item['Round Number']}","${item['Score']}","${item['Time Taken (s)']}","${item['Timestamp']}"`
-        ).join('\n') + '\n';
-        
-        if (!fs.existsSync(CSV_FILE)) {
-            fs.writeFileSync(CSV_FILE, csvHeader + csvRows);
-        } else {
-            fs.appendFileSync(CSV_FILE, csvRows);
-        }
-
-        // 2. EXCEL SYNC: Update the Excel file
-        const workbook = xlsx.utils.book_new();
-        const newWorksheet = xlsx.utils.json_to_sheet(allResults);
-        xlsx.utils.book_append_sheet(workbook, newWorksheet, 'Results');
-        xlsx.writeFile(workbook, EXCEL_FILE);
-
-        console.log(`Successfully persisted ${itemsToWrite.length} submission(s). Total: ${allResults.length}`);
-    } catch (error) {
-        console.error('Error during data persistence:', error);
-        // Put items back in queue if write failed (except the CSV part which usually succeeds)
-        writeQueue.unshift(...itemsToWrite);
-    }
-}, 5000); // Sync every 5 seconds
-
 // API Endpoints for Admin (Download Results)
-app.get('/api/admin/results', (req, res) => {
+app.get('/api/admin/results', async (req, res) => {
     const { secret } = req.query;
     if (!secret || secret.trim() !== SECRET_CODE) {
         console.warn(`[Admin] Unauthorized results access attempt with secret: ${secret}`);
         return res.status(401).json({ error: 'Unauthorized' });
     }
-    console.log(`[Admin] Results fetched. Count: ${allResults.length}`);
-    res.json(allResults);
+    try {
+        const docs = await Result.find().sort({ timestamp: -1 }).lean();
+        const formattedResults = docs.map(transformResult);
+        res.json(formattedResults);
+    } catch (err) {
+        console.error('Error fetching admin results:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
-app.get('/api/admin/download-excel', (req, res) => {
+app.get('/api/admin/download-excel', async (req, res) => {
     const { secret } = req.query;
     if (!secret || secret.trim() !== SECRET_CODE) {
         console.warn(`[Admin] Unauthorized excel download attempt`);
@@ -266,14 +237,17 @@ app.get('/api/admin/download-excel', (req, res) => {
     }
 
     try {
+        const docs = await Result.find().sort({ timestamp: 1 }).lean();
+        const formattedResults = docs.map(transformResult);
+
         const workbook = xlsx.utils.book_new();
         // If empty, create a dummy row so the file isn't corrupted
-        const dataToSheet = allResults.length > 0 ? allResults : [{ Message: 'No submissions yet' }];
+        const dataToSheet = formattedResults.length > 0 ? formattedResults : [{ Message: 'No submissions yet' }];
         const worksheet = xlsx.utils.json_to_sheet(dataToSheet);
         xlsx.utils.book_append_sheet(workbook, worksheet, 'Results');
         const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
         
-        console.log(`[Admin] Excel download initiated. Rows: ${allResults.length}`);
+        console.log(`[Admin] Excel download initiated. Rows: ${formattedResults.length}`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', 'attachment; filename=results.xlsx');
         res.send(buffer);
@@ -283,26 +257,34 @@ app.get('/api/admin/download-excel', (req, res) => {
     }
 });
 
-app.get('/api/admin/download-csv', (req, res) => {
+app.get('/api/admin/download-csv', async (req, res) => {
     const { secret } = req.query;
     if (!secret || secret.trim() !== SECRET_CODE) {
         console.warn(`[Admin] Unauthorized csv download attempt`);
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    if (allResults.length === 0) {
-        return res.status(404).send('No results yet');
-    }
+    try {
+        const docs = await Result.find().sort({ timestamp: 1 }).lean();
+        const formattedResults = docs.map(transformResult);
 
-    const headers = Object.keys(allResults[0]).join(',');
-    const rows = allResults.map(row => 
-        Object.values(row).map(val => `"${val}"`).join(',')
-    ).join('\n');
-    
-    console.log(`[Admin] CSV download initiated. Rows: ${allResults.length}`);
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=results.csv');
-    res.send(headers + '\n' + rows);
+        if (formattedResults.length === 0) {
+            return res.status(404).send('No results yet');
+        }
+
+        const headers = Object.keys(formattedResults[0]).join(',');
+        const rows = formattedResults.map(row => 
+            Object.values(row).map(val => `"${val}"`).join(',')
+        ).join('\n');
+        
+        console.log(`[Admin] CSV download initiated. Rows: ${formattedResults.length}`);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=results.csv');
+        res.send(headers + '\n' + rows);
+    } catch (e) {
+        console.error('[Admin] CSV generation error:', e);
+        res.status(500).send('Error generating CSV file');
+    }
 });
 
 
@@ -311,4 +293,3 @@ app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
     console.log(`Admin Download URL: /api/admin/download-excel?secret=${SECRET_CODE}`);
 });
-
