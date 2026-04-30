@@ -2,6 +2,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const express = require('express');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const cors = require('cors');
 const fs = require('fs');
 const xlsx = require('xlsx');
@@ -12,8 +13,14 @@ const mongoose = require('mongoose');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-const SECRET_CODE = (process.env.SECRET_CODE || 'SECRET123').trim();
+const SECRET_CODE = (process.env.SECRET_CODE || 'SECRET123').trim(); // Kept for Admin Access
 const SESSION_SECRET = process.env.SESSION_SECRET || 'quiz-default-secret-key';
+
+const ROUND_SECRET_CODES = {
+    "1": process.env.ROUND_1_CODE || "GDG2026",
+    "2": process.env.ROUND_2_CODE || "DCODE2026",
+    "3": process.env.ROUND_3_CODE || "TECH2026"
+};
 
 // Connect to MongoDB
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/gdg_quiz';
@@ -85,6 +92,7 @@ app.use(session({
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: MONGODB_URI }),
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 1 day
 }));
 
@@ -105,17 +113,20 @@ function shuffle(array) {
 app.post('/api/login', (req, res) => {
     const { teamName, participantName, secretCode, round } = req.body;
 
-    if (!secretCode || secretCode.trim() !== SECRET_CODE) {
-        console.log(`[Login] Failed login attempt for team: ${teamName}`);
-        return res.status(401).json({ error: 'Invalid secret code' });
+    const roundStr = String(round || 1);
+    const expectedCode = ROUND_SECRET_CODES[roundStr];
+
+    if (!questionsData[roundStr] || !expectedCode) {
+        return res.status(400).json({ error: 'Invalid round' });
     }
+
+    if (!secretCode || secretCode.trim() !== expectedCode) {
+        console.log(`[Login] Failed login attempt for team: ${teamName}, Round: ${roundStr}`);
+        return res.status(401).json({ error: `Invalid secret code for Round ${roundStr}` });
+    }
+
     if (!teamName) {
         return res.status(400).json({ error: 'Team name is required' });
-    }
-    
-    const roundStr = String(round || 1);
-    if (!questionsData[roundStr]) {
-        return res.status(400).json({ error: 'Invalid round' });
     }
 
     if (req.session.submittedRounds && req.session.submittedRounds.includes(roundStr)) {

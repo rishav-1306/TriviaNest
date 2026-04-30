@@ -50,6 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
 async function checkSession() {
     try {
         const res = await fetch(`${API_BASE}/session`);
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error('Server returned an invalid response (not JSON). Server might be down.');
+        }
         const data = await res.json();
         
         if (data.active) {
@@ -106,7 +110,13 @@ loginForm.addEventListener('submit', async (e) => {
             body: JSON.stringify({ teamName: name, participantName: pName, secretCode: code, round: currentRound })
         });
         
-        const data = await res.json();
+        let data;
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+            data = await res.json();
+        } else {
+            throw new Error('Server error: The server is down or database connection failed.');
+        }
         
         if (!res.ok) {
             throw new Error(data.error || 'Login failed');
@@ -128,6 +138,10 @@ loginForm.addEventListener('submit', async (e) => {
 async function fetchQuestions() {
     try {
         const res = await fetch(`${API_BASE}/questions`);
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error('Server returned an invalid response. Cannot load questions.');
+        }
         const data = await res.json();
         
         if (!res.ok) {
@@ -259,6 +273,11 @@ async function submitQuiz() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ answers: userAnswers })
         });
+        
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new Error('Server returned an invalid response. Submission may not have been saved.');
+        }
         
         const data = await res.json();
         
