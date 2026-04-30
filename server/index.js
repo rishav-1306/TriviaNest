@@ -2,7 +2,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const express = require('express');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const MongoStore = require('connect-mongo').default;
 const cors = require('cors');
 const fs = require('fs');
 const xlsx = require('xlsx');
