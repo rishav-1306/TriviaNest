@@ -17,9 +17,31 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'quiz-default-secret-key';
 
 // Connect to MongoDB
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/gdg_quiz';
+
+if (!process.env.MONGODB_URI) {
+    console.warn('⚠️  WARNING: MONGODB_URI not set in environment variables. Using local MongoDB.');
+    console.warn('⚠️  If you are using MongoDB Atlas, please set MONGODB_URI in your .env file.');
+}
+
 mongoose.connect(MONGODB_URI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB connection error:', err));
+    .then(() => {
+        console.log('✅ Connected to MongoDB successfully');
+        console.log(`📊 Database: ${mongoose.connection.name}`);
+    })
+    .catch(err => {
+        console.error('❌ MongoDB connection error:', err.message);
+        console.error('Please check your MONGODB_URI in the .env file');
+        process.exit(1); // Exit if database connection fails
+    });
+
+// Handle MongoDB connection events
+mongoose.connection.on('disconnected', () => {
+    console.warn('⚠️  MongoDB disconnected');
+});
+
+mongoose.connection.on('error', (err) => {
+    console.error('❌ MongoDB error:', err.message);
+});
 
 const resultSchema = new mongoose.Schema({
     teamName: String,
@@ -166,7 +188,7 @@ app.get('/api/questions', (req, res) => {
 });
 
 // Submit answers
-app.post('/api/submit', (req, res) => {
+app.post('/api/submit', async (req, res) => {
     if (!req.session.teamName || !req.session.currentRound) {
         return res.status(401).json({ error: 'Not authenticated' });
     }
@@ -199,7 +221,14 @@ app.post('/api/submit', (req, res) => {
         score: score,
         timeTaken: parseFloat(timeTaken.toFixed(2))
     });
-    resultDoc.save().catch(err => console.error('Error saving result to MongoDB:', err));
+
+    try {
+        await resultDoc.save();
+        console.log(`[Submit] Saved result for team: ${req.session.teamName}, Round: ${currentRound}, Score: ${score}`);
+    } catch (err) {
+        console.error('Error saving result to MongoDB:', err);
+        return res.status(500).json({ error: 'Failed to save results. Please try again.' });
+    }
 
     // Mark round as submitted
     req.session.submittedRounds.push(currentRound);
