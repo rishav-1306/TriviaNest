@@ -71,6 +71,13 @@ async function checkSession() {
         } else {
             // Check if team name is in session and there's a submitted round, meaning we should advance currentRound on refresh
             if (data.teamName && data.submittedRounds && data.submittedRounds.length > 0) {
+                 if (data.failed) {
+                     nextRoundBtn.classList.add('hidden');
+                     finishMsg.classList.remove('hidden');
+                     finishMsg.textContent = "You did not score enough to proceed to the next round.";
+                     showScreen('result');
+                     return;
+                 }
                  const highestSubmitted = Math.max(...data.submittedRounds.map(r => parseInt(r)));
                  if (highestSubmitted < totalRounds) {
                      currentRound = highestSubmitted + 1;
@@ -82,6 +89,7 @@ async function checkSession() {
                      // participantNameInput stays enabled
                      roundIndicator.textContent = `Round ${currentRound}`;
                  } else {
+                     nextRoundBtn.classList.add('hidden');
                      finishMsg.classList.remove('hidden');
                      showScreen('result');
                      return;
@@ -198,6 +206,11 @@ function startTimer(duration) {
 
 // Render Question
 function renderQuestion() {
+    if (currentRound === 2) {
+        renderRound2Questions();
+        return;
+    }
+
     const q = questions[currentQuestionIndex];
     quizProgress.textContent = `Question ${currentQuestionIndex + 1}/${questions.length}`;
     questionText.textContent = q.text;
@@ -236,6 +249,70 @@ function renderQuestion() {
     nextBtn.disabled = !userAnswers[q.id];
 }
 
+function renderRound2Questions() {
+    quizProgress.textContent = `Matching Round`;
+    questionText.textContent = "Match the emojis to the correct application/tool.";
+    questionImage.classList.add('hidden');
+    
+    optionsContainer.innerHTML = '';
+    
+    questions.forEach((q, index) => {
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.flexDirection = 'column';
+        row.style.marginBottom = '20px';
+        row.style.padding = '15px';
+        row.style.border = '2px solid var(--border-color)';
+        row.style.borderRadius = '8px';
+        row.style.background = '#fdfdfd';
+        row.style.textAlign = 'left';
+        
+        const clueLabel = document.createElement('div');
+        clueLabel.textContent = q.text;
+        clueLabel.style.fontSize = '1.2rem';
+        clueLabel.style.fontWeight = 'bold';
+        clueLabel.style.marginBottom = '10px';
+        
+        const select = document.createElement('select');
+        select.className = 'option-select';
+        
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = '-- Select an answer --';
+        defaultOpt.disabled = true;
+        defaultOpt.selected = !userAnswers[q.id];
+        select.appendChild(defaultOpt);
+        
+        q.options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt;
+            option.textContent = opt;
+            if (userAnswers[q.id] === opt) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+        
+        select.onchange = (e) => {
+            userAnswers[q.id] = e.target.value;
+            checkRound2Completion();
+        };
+        
+        row.appendChild(clueLabel);
+        row.appendChild(select);
+        optionsContainer.appendChild(row);
+    });
+    
+    nextBtn.textContent = 'Submit';
+    nextBtn.className = 'btn btn-red';
+    checkRound2Completion();
+}
+
+function checkRound2Completion() {
+    const allAnswered = questions.every(q => userAnswers[q.id]);
+    nextBtn.disabled = !allAnswered;
+}
+
 function selectOption(qId, opt) {
     userAnswers[qId] = opt;
     
@@ -253,7 +330,9 @@ function selectOption(qId, opt) {
 }
 
 nextBtn.addEventListener('click', () => {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentRound === 2) {
+        submitQuiz();
+    } else if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
         renderQuestion();
     } else {
@@ -288,9 +367,14 @@ async function submitQuiz() {
         resultScore.textContent = data.score;
         resultTime.textContent = data.timeTaken;
         
-        if (currentRound >= totalRounds) {
+        if (!data.passed) {
             nextRoundBtn.classList.add('hidden');
             finishMsg.classList.remove('hidden');
+            finishMsg.textContent = "You did not score enough to proceed to the next round.";
+        } else if (currentRound >= totalRounds) {
+            nextRoundBtn.classList.add('hidden');
+            finishMsg.classList.remove('hidden');
+            finishMsg.textContent = "Congratulations! You have completed all rounds.";
         } else {
             nextRoundBtn.classList.remove('hidden');
             finishMsg.classList.add('hidden');

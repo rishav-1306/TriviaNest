@@ -171,9 +171,9 @@ app.post('/api/login', (req, res) => {
 // Get session state to handle page refreshes
 app.get('/api/session', (req, res) => {
     if (req.session.teamName && req.session.currentRound && req.session.submittedRounds && !req.session.submittedRounds.includes(req.session.currentRound)) {
-        res.json({ active: true, teamName: req.session.teamName, participantName: req.session.participantName, round: req.session.currentRound, submittedRounds: req.session.submittedRounds });
+        res.json({ active: true, teamName: req.session.teamName, participantName: req.session.participantName, round: req.session.currentRound, submittedRounds: req.session.submittedRounds, failed: req.session.failed });
     } else {
-        res.json({ active: false, teamName: req.session.teamName, participantName: req.session.participantName, submittedRounds: req.session.submittedRounds });
+        res.json({ active: false, teamName: req.session.teamName, participantName: req.session.participantName, submittedRounds: req.session.submittedRounds, failed: req.session.failed });
     }
 });
 
@@ -224,6 +224,13 @@ app.post('/api/submit', async (req, res) => {
         }
     }
 
+    // Check threshold (50%)
+    const totalQuestions = Object.keys(correctAnswers).length;
+    const passed = score >= (totalQuestions / 2);
+    if (!passed) {
+        req.session.failed = true;
+    }
+
     // Save to MongoDB
     const resultDoc = new Result({
         teamName: req.session.teamName,
@@ -235,7 +242,7 @@ app.post('/api/submit', async (req, res) => {
 
     try {
         await resultDoc.save();
-        console.log(`[Submit] Saved result for team: ${req.session.teamName}, Round: ${currentRound}, Score: ${score}`);
+        console.log(`[Submit] Saved result for team: ${req.session.teamName}, Round: ${currentRound}, Score: ${score}, Passed: ${passed}`);
     } catch (err) {
         console.error('Error saving result to MongoDB:', err);
         return res.status(500).json({ error: 'Failed to save results. Please try again.' });
@@ -248,6 +255,7 @@ app.post('/api/submit', async (req, res) => {
     res.json({
         score: score,
         timeTaken: timeTaken.toFixed(2),
+        passed: passed,
         message: 'Submission successful'
     });
 });

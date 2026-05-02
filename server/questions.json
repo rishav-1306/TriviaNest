@@ -34,24 +34,27 @@
   "2": [
     {
       "id": "q2_1",
-      "text": "What company is represented by this logo?",
-      "image": "/images/logo1.png",
-      "options": ["Google", "Microsoft", "Apple", "Amazon"],
-      "correct": "Google"
+      "text": "Clue: 📸 🌈📱",
+      "options": ["Snapchat", "Instagram", "Pinterest", "TikTok"],
+      "correct": "Instagram"
     },
     {
       "id": "q2_2",
-      "text": "Identify this programming language from its logo.",
-      "image": "/images/logo2.png",
-      "options": ["Python", "JavaScript", "Java", "Ruby"],
-      "correct": "JavaScript"
+      "text": "Clue: ⚛️ 🔵 🌐",
+      "options": ["Angular", "Vue", "React", "Svelte"],
+      "correct": "React"
     },
     {
       "id": "q2_3",
-      "text": "Which cloud provider uses this icon?",
-      "image": "/images/logo3.png",
-      "options": ["AWS", "Azure", "Google Cloud", "DigitalOcean"],
-      "correct": "AWS"
+      "text": "Clue: 🍎 🎵 📻",
+      "options": ["iTunes", "Apple Music", "Shazam", "GarageBand"],
+      "correct": "Apple Music"
+    },
+    {
+      "id": "q2_4",
+      "text": "Clue: 🦁 🟧 🌐",
+      "options": ["Firefox", "MetaMask", "Brave", "Tor"],
+      "correct": "Brave"
     }
   ],
   "3": [
