@@ -43,6 +43,10 @@ const finishMsg = document.getElementById('finish-msg');
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+    // Show login screen immediately for faster perceived load time
+    showScreen('login');
+    
+    // Check session in background
     checkSession();
 
     // Prevent back navigation to mess up state
