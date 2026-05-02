@@ -269,7 +269,7 @@ function renderRound2Questions() {
         
         const clueLabel = document.createElement('div');
         clueLabel.textContent = q.text;
-        clueLabel.style.fontSize = '1.2rem';
+        clueLabel.style.fontSize = '2.5rem';
         clueLabel.style.fontWeight = 'bold';
         clueLabel.style.marginBottom = '10px';
         
