@@ -11,6 +11,8 @@ let userAnswers = {};
 let timerInterval;
 let timeLimit = 60;
 let startTime;
+let currentPage = 0; // For Round 2 pagination
+const questionsPerPage = 4;
 
 // DOM Elements
 const loginScreen = document.getElementById('login-screen');
@@ -30,6 +32,9 @@ const questionText = document.getElementById('question-text');
 const questionImage = document.getElementById('question-image');
 const optionsContainer = document.getElementById('options-container');
 const nextBtn = document.getElementById('next-btn');
+const prevBtn = document.getElementById('prev-btn');
+const paginationControls = document.getElementById('pagination-controls');
+const pageIndicator = document.getElementById('page-indicator');
 
 const resultScore = document.getElementById('result-score');
 const resultTime = document.getElementById('result-time');
@@ -170,6 +175,7 @@ async function fetchQuestions() {
         startTimer(remaining);
         
         currentQuestionIndex = 0;
+        currentPage = 0; // Reset pagination for Round 2
         userAnswers = {};
         
         renderQuestion();
@@ -182,14 +188,20 @@ async function fetchQuestions() {
 }
 
 // Timer
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
 function startTimer(duration) {
     clearInterval(timerInterval);
     let timer = duration;
-    quizTimer.textContent = `Time: ${timer}s`;
+    quizTimer.textContent = `Time: ${formatTime(timer)}`;
     
     timerInterval = setInterval(() => {
         timer--;
-        quizTimer.textContent = `Time: ${timer}s`;
+        quizTimer.textContent = `Time: ${formatTime(timer)}`;
         
         if (timer <= 10) {
             quizTimer.style.color = 'var(--google-red)';
@@ -246,6 +258,16 @@ function renderQuestion() {
         nextBtn.className = 'btn btn-green';
     }
     
+    // Show/hide Previous button
+    if (currentQuestionIndex > 0) {
+        prevBtn.classList.remove('hidden');
+    } else {
+        prevBtn.classList.add('hidden');
+    }
+    
+    // Hide pagination controls for rounds 1 and 3
+    paginationControls.classList.add('hidden');
+    
     nextBtn.disabled = !userAnswers[q.id];
 }
 
@@ -256,7 +278,14 @@ function renderRound2Questions() {
     
     optionsContainer.innerHTML = '';
     
-    questions.forEach((q, index) => {
+    // Calculate pagination
+    const totalPages = Math.ceil(questions.length / questionsPerPage);
+    const startIndex = currentPage * questionsPerPage;
+    const endIndex = Math.min(startIndex + questionsPerPage, questions.length);
+    const currentPageQuestions = questions.slice(startIndex, endIndex);
+    
+    // Render only current page questions
+    currentPageQuestions.forEach((q) => {
         const row = document.createElement('div');
         row.style.display = 'flex';
         row.style.flexDirection = 'column';
@@ -295,7 +324,10 @@ function renderRound2Questions() {
         
         select.onchange = (e) => {
             userAnswers[q.id] = e.target.value;
-            checkRound2Completion();
+            // Re-render to update button state (only affects last page)
+            if (currentPage === Math.ceil(questions.length / questionsPerPage) - 1) {
+                renderRound2Questions();
+            }
         };
         
         row.appendChild(clueLabel);
@@ -303,9 +335,30 @@ function renderRound2Questions() {
         optionsContainer.appendChild(row);
     });
     
-    nextBtn.textContent = 'Submit';
-    nextBtn.className = 'btn btn-red';
-    checkRound2Completion();
+    // Update pagination controls
+    paginationControls.classList.remove('hidden');
+    pageIndicator.textContent = `Page ${currentPage + 1}/${totalPages}`;
+    
+    // Show/hide Previous button for pagination
+    if (currentPage > 0) {
+        prevBtn.classList.remove('hidden');
+        prevBtn.textContent = 'Previous Page';
+    } else {
+        prevBtn.classList.add('hidden');
+    }
+    
+    // Update Next button text
+    if (currentPage === totalPages - 1) {
+        nextBtn.textContent = 'Submit';
+        nextBtn.className = 'btn btn-red';
+        // Only check completion on the last page
+        const allAnswered = questions.every(q => userAnswers[q.id]);
+        nextBtn.disabled = !allAnswered;
+    } else {
+        nextBtn.textContent = 'Next Page';
+        nextBtn.className = 'btn btn-green';
+        nextBtn.disabled = false; // Allow free navigation between pages
+    }
 }
 
 function checkRound2Completion() {
@@ -331,12 +384,32 @@ function selectOption(qId, opt) {
 
 nextBtn.addEventListener('click', () => {
     if (currentRound === 2) {
-        submitQuiz();
+        const totalPages = Math.ceil(questions.length / questionsPerPage);
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            renderRound2Questions();
+        } else {
+            submitQuiz();
+        }
     } else if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
         renderQuestion();
     } else {
         submitQuiz();
+    }
+});
+
+prevBtn.addEventListener('click', () => {
+    if (currentRound === 2) {
+        if (currentPage > 0) {
+            currentPage--;
+            renderRound2Questions();
+        }
+    } else {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
     }
 });
 

@@ -20,6 +20,11 @@
 
 body {
     background-color: var(--bg-color);
+    background-image: url('bg.webp');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     color: var(--text-color);
     display: flex;
     justify-content: center;
@@ -270,6 +275,7 @@ h1 {
     width: 100%;
     display: flex;
     justify-content: flex-end;
+    gap: 1rem;
     position: relative;
     z-index: 1;
 }
@@ -277,6 +283,20 @@ h1 {
 #next-btn {
     width: auto;
     padding: 0.8rem 2.5rem;
+}
+
+#prev-btn {
+    width: auto;
+    padding: 0.8rem 2.5rem;
+}
+
+.pagination-controls {
+    width: 100%;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text-color);
 }
 
 /* Results */
