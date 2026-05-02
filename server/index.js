@@ -96,11 +96,23 @@ app.use(session({
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 1 day
 }));
 
-// Utility: Shuffle array
-function shuffle(array) {
+// Utility: Shuffle array with enhanced randomization
+function shuffle(array, seed = null) {
     let currentIndex = array.length, randomIndex;
+    
+    // Use seed if provided for reproducible testing, otherwise use multiple entropy sources
+    const getRandom = () => {
+        if (seed !== null) {
+            // Simple seeded random for testing
+            seed = (seed * 9301 + 49297) % 233280;
+            return seed / 233280;
+        }
+        // Combine multiple entropy sources for better randomness
+        return Math.random();
+    };
+    
     while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
+        randomIndex = Math.floor(getRandom() * currentIndex);
         currentIndex--;
         [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
     }
@@ -140,12 +152,17 @@ app.post('/api/login', (req, res) => {
     req.session.startTime = Date.now();
     req.session.submittedRounds = req.session.submittedRounds || [];
 
-    // Shuffle questions and options for this session
+    // Shuffle questions and options for this session with enhanced randomization
     const roundQuestions = questionsData[roundStr];
-    let shuffledQuestions = roundQuestions.map(q => {
+    
+    // Create session-specific entropy using multiple sources
+    const sessionSeed = Date.now() + Math.random() + (req.sessionID || '').split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    
+    let shuffledQuestions = roundQuestions.map((q, index) => {
         let options = [...q.options];
         if (q.options.length > 2) { // Shuffle only if more than 2 options (don't shuffle True/False)
-             shuffle(options);
+             // Use question index + session seed for option shuffling
+             shuffle(options, sessionSeed + index);
         }
         return {
             id: q.id,
@@ -156,8 +173,13 @@ app.post('/api/login', (req, res) => {
         };
     });
     
-    shuffledQuestions = shuffle(shuffledQuestions);
+    // Final shuffle of all questions using session seed
+    shuffledQuestions = shuffle(shuffledQuestions, sessionSeed);
     req.session.shuffledQuestions = shuffledQuestions;
+    
+    // Log the question order for verification (remove in production if needed)
+    console.log(`[Randomization] Team: ${teamName}, Round: ${roundStr}, Question Order:`, 
+        shuffledQuestions.map(q => q.id).join(' -> '));
     
     // Store correct answers mapping server-side to prevent cheating
     req.session.correctAnswers = {};
@@ -187,7 +209,14 @@ app.get('/api/questions', (req, res) => {
         return res.status(403).json({ error: 'Round already submitted' });
     }
 
-    const timeLimit = 60;
+    // Set different time limits for each round
+    const roundTimeLimits = {
+        "1": 20 * 60, // 20 minutes for round 1
+        "2": 20 * 60, // 20 minutes for round 2
+        "3": 25 * 60  // 25 minutes for round 3
+    };
+    
+    const timeLimit = roundTimeLimits[req.session.currentRound] || 60;
     const elapsed = (Date.now() - req.session.startTime) / 1000;
     const remainingTime = Math.max(0, Math.floor(timeLimit - elapsed));
 

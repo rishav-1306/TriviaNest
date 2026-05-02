@@ -29,6 +29,96 @@
       "text": "Which HTML tag is used to define an internal style sheet?",
       "options": ["<css>", "<style>", "<script>", "<link>"],
       "correct": "<style>"
+    },
+    {
+      "id": "q1_6",
+      "text": "What is the purpose of the <head> tag in HTML?",
+      "options": ["To contain metadata", "To display main content", "To create navigation", "To add images"],
+      "correct": "To contain metadata"
+    },
+    {
+      "id": "q1_7",
+      "text": "Which CSS property is used to change the text color?",
+      "options": ["color", "text-color", "font-color", "foreground-color"],
+      "correct": "color"
+    },
+    {
+      "id": "q1_8",
+      "text": "What is the correct HTML element for the largest heading?",
+      "options": ["<h1>", "<h6>", "<header>", "<heading>"],
+      "correct": "<h1>"
+    },
+    {
+      "id": "q1_9",
+      "text": "Which JavaScript method is used to add an element to the end of an array?",
+      "options": ["push()", "pop()", "shift()", "unshift()"],
+      "correct": "push()"
+    },
+    {
+      "id": "q1_10",
+      "text": "What does CSS stand for?",
+      "options": ["Cascading Style Sheets", "Computer Style Sheets", "Creative Style Sheets", "Colorful Style Sheets"],
+      "correct": "Cascading Style Sheets"
+    },
+    {
+      "id": "q1_11",
+      "text": "Which HTML attribute is used to specify an alternate text for an image?",
+      "options": ["alt", "title", "src", "href"],
+      "correct": "alt"
+    },
+    {
+      "id": "q1_12",
+      "text": "What is the correct JavaScript syntax to write a comment?",
+      "options": ["// This is a comment", "<!-- This is a comment -->", "# This is a comment", "/* This is a comment */"],
+      "correct": "// This is a comment"
+    },
+    {
+      "id": "q1_13",
+      "text": "Which CSS property is used to change the background color?",
+      "options": ["background-color", "color", "bg-color", "background"],
+      "correct": "background-color"
+    },
+    {
+      "id": "q1_14",
+      "text": "What is the correct HTML for creating a hyperlink?",
+      "options": ["<a href=\"url\">link</a>", "<link>url</link>", "<href>link</href>", "<hyperlink>url</hyperlink>"],
+      "correct": "<a href=\"url\">link</a>"
+    },
+    {
+      "id": "q1_15",
+      "text": "Which JavaScript keyword is used to declare a variable?",
+      "options": ["var", "variable", "declare", "define"],
+      "correct": "var"
+    },
+    {
+      "id": "q1_16",
+      "text": "What is the purpose of the <title> tag in HTML?",
+      "options": ["To set the page title in browser tab", "To create headings", "To add subtitles", "To format text"],
+      "correct": "To set the page title in browser tab"
+    },
+    {
+      "id": "q1_17",
+      "text": "Which CSS property controls the spacing between lines of text?",
+      "options": ["line-height", "text-spacing", "line-spacing", "spacing"],
+      "correct": "line-height"
+    },
+    {
+      "id": "q1_18",
+      "text": "What is the correct HTML element for inserting a line break?",
+      "options": ["<br>", "<lb>", "<break>", "<line-break>"],
+      "correct": "<br>"
+    },
+    {
+      "id": "q1_19",
+      "text": "Which JavaScript function is used to print content to the console?",
+      "options": ["console.log()", "print()", "log()", "output()"],
+      "correct": "console.log()"
+    },
+    {
+      "id": "q1_20",
+      "text": "What is the correct CSS syntax to make text bold?",
+      "options": ["font-weight: bold;", "text-style: bold;", "font-style: bold;", "text-weight: bold;"],
+      "correct": "font-weight: bold;"
     }
   ],
   "2": [
@@ -55,6 +145,102 @@
       "text": "Clue: 🦁 🟧 🌐",
       "options": ["Firefox", "MetaMask", "Brave", "Tor"],
       "correct": "Brave"
+    },
+    {
+      "id": "q2_5",
+      "text": "Clue: 🎮 🎯 🕹️",
+      "options": ["Steam", "Epic Games", "Xbox", "PlayStation"],
+      "correct": "Steam"
+    },
+    {
+      "id": "q2_6",
+      "text": "Clue: 🐦 💬 🔵",
+      "options": ["Twitter", "Facebook", "LinkedIn", "Telegram"],
+      "correct": "Twitter"
+    },
+    {
+      "id": "q2_7",
+      "text": "Clue: 📹 🎬 🎥",
+      "options": ["YouTube", "Netflix", "TikTok", "Vimeo"],
+      "correct": "YouTube"
+    },
+    {
+      "id": "q2_8",
+      "text": "Clue: 📧 ✉️ 📮",
+      "options": ["Gmail", "Outlook", "Yahoo Mail", "ProtonMail"],
+      "correct": "Gmail"
+    },
+    {
+      "id": "q2_9",
+      "text": "Clue: 🌍 🔍 🗺️",
+      "options": ["Google Maps", "Waze", "Apple Maps", "OpenStreetMap"],
+      "correct": "Google Maps"
+    },
+    {
+      "id": "q2_10",
+      "text": "Clue: 💼 💻 📊",
+      "options": ["LinkedIn", "Facebook", "Twitter", "Instagram"],
+      "correct": "LinkedIn"
+    },
+    {
+      "id": "q2_11",
+      "text": "Clue: 🎵 🎶 🎧",
+      "options": ["Spotify", "Apple Music", "YouTube Music", "SoundCloud"],
+      "correct": "Spotify"
+    },
+    {
+      "id": "q2_12",
+      "text": "Clue: 📱 💬 🟢",
+      "options": ["WhatsApp", "Telegram", "Signal", "Messenger"],
+      "correct": "WhatsApp"
+    },
+    {
+      "id": "q2_13",
+      "text": "Clue: 🔧 ⚙️ 🛠️",
+      "options": ["GitHub", "GitLab", "Bitbucket", "SourceForge"],
+      "correct": "GitHub"
+    },
+    {
+      "id": "q2_14",
+      "text": "Clue: 📚 📖 📝",
+      "options": ["Medium", "WordPress", "Blogger", "Substack"],
+      "correct": "Medium"
+    },
+    {
+      "id": "q2_15",
+      "text": "Clue: 🎨 🖌️ 🎭",
+      "options": ["Canva", "Figma", "Adobe Photoshop", "Sketch"],
+      "correct": "Canva"
+    },
+    {
+      "id": "q2_16",
+      "text": "Clue: ☁️ 💾 📁",
+      "options": ["Google Drive", "Dropbox", "OneDrive", "iCloud"],
+      "correct": "Google Drive"
+    },
+    {
+      "id": "q2_17",
+      "text": "Clue: 🔍 ❓ 💡",
+      "options": ["Google Search", "Bing", "DuckDuckGo", "Yahoo Search"],
+      "correct": "Google Search"
+    },
+    {
+      "id": "q2_18",
+      "text": "Clue: 🛒 🛍️ 🛒",
+      "options": ["Amazon", "eBay", "Etsy", "Shopify"],
+      "correct": "Amazon"
+    },
+    {
+      "id": "q2_19",
+      "text": "Clue: 🎬 🎞️ 🍿",
+      "options": ["Netflix", "Hulu", "Disney+", "HBO Max"],
+      "correct": "Netflix"
+    },
+    {
+      "id": "q2_20",
+      "text": "Clue: 💻 🖥️ 🔧",
+      "options": ["Windows", "macOS", "Linux", "Chrome OS"],
+      "correct": "Windows"
     }
   ],
   "3": [
@@ -81,6 +267,102 @@
       "text": "An array in JavaScript can hold elements of different data types.",
       "options": ["True", "False"],
       "correct": "True"
+    },
+    {
+      "id": "q3_5",
+      "text": "HTML5 supports semantic elements like <header>, <footer>, and <nav>.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_6",
+      "text": "The 'const' keyword in JavaScript allows variable reassignment.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_7",
+      "text": "CSS Flexbox is designed for one-dimensional layouts.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_8",
+      "text": "JavaScript is a compiled programming language.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_9",
+      "text": "The <div> element is a semantic HTML element.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_10",
+      "text": "CSS variables can be used to store reusable values.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_11",
+      "text": "JavaScript arrays have a fixed size.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_12",
+      "text": "The 'alt' attribute is required for all <img> elements in HTML.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_13",
+      "text": "CSS Grid is primarily used for two-dimensional layouts.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_14",
+      "text": "JavaScript functions can be returned from other functions.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_15",
+      "text": "HTML comments are visible to users on the webpage.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_16",
+      "text": "The 'z-index' CSS property controls element stacking order.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_17",
+      "text": "JavaScript objects can store functions as values.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_18",
+      "text": "CSS 'display: none' completely removes an element from the document flow.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_19",
+      "text": "The 'localStorage' API persists data even after browser closes.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_20",
+      "text": "HTML forms can only submit data using GET method.",
+      "options": ["True", "False"],
+      "correct": "False"
     }
   ]
 }
