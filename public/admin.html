@@ -42,6 +42,40 @@
             color: var(--google-red, red);
             margin-top: 10px;
         }
+        .admin-leaderboard-section {
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #eee;
+            width: 100%;
+        }
+        .admin-leaderboard-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-color, #333);
+        }
+        .admin-leaderboard-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .admin-leaderboard-controls label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .admin-leaderboard-controls select {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        #leaderboard-subtitle-admin {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -55,17 +89,45 @@
             </div>
             
             <div class="btn-group">
-                <button id="view-btn" class="btn btn-blue">View Results</button>
-                <button id="excel-btn" class="btn btn-green">Download Excel</button>
-                <button id="csv-btn" class="btn btn-yellow">Download CSV</button>
+                <button type="button" id="view-btn" class="btn btn-blue">View Results</button>
+                <button type="button" id="excel-btn" class="btn btn-green">Download Excel</button>
+                <button type="button" id="csv-btn" class="btn btn-yellow">Download CSV</button>
             </div>
             <p id="admin-error" class="error-msg"></p>
+            <div class="admin-leaderboard-section">
+                <h2>Leaderboard</h2>
+                <p id="leaderboard-subtitle-admin">Cumulative scores through the selected round (requires admin code).</p>
+                <div class="admin-leaderboard-controls">
+                    <label for="leaderboard-round-select">Through round</label>
+                    <select id="leaderboard-round-select" aria-label="Leaderboard through round">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                    </select>
+                    <button type="button" id="leaderboard-btn" class="btn btn-blue" style="width:auto; min-width: 180px;">View Leaderboard</button>
+                </div>
+                <table id="leaderboard-table-admin">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Team</th>
+                            <th>Participant</th>
+                            <th>Score</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body-admin">
+                        <tr><td colspan="5" style="text-align:center; color:#888;">Press &quot;View Leaderboard&quot; to load.</td></tr>
+                    </tbody>
+                </table>
+            </div>
             
             <div id="results-table-container">
                 <table id="results-table">
                     <thead>
                         <tr>
                             <th>Team</th>
+                            <th>Participant</th>
                             <th>Round</th>
                             <th>Score</th>
                             <th>Time</th>
@@ -88,60 +150,211 @@
             const csvBtn = document.getElementById('csv-btn');
             const errorMsg = document.getElementById('admin-error');
             const resultsBody = document.getElementById('results-body');
+            const leaderboardBtn = document.getElementById('leaderboard-btn');
+            const leaderboardRoundSelect = document.getElementById('leaderboard-round-select');
+            const leaderboardBodyAdmin = document.getElementById('leaderboard-body-admin');
+            const leaderboardSubtitleAdmin = document.getElementById('leaderboard-subtitle-admin');
+            const COL_SPAN = 6;
+            const LB_COL_SPAN = 5;
+
+            function escapeCell(text) {
+                const div = document.createElement('div');
+                div.textContent = text == null ? '' : String(text);
+                return div.innerHTML;
+            }
 
             async function fetchResults() {
                 const secret = secretInput.value.trim();
                 if (!secret) return alert('Please enter secret code');
-                
+
                 errorMsg.textContent = '';
-                resultsBody.innerHTML = '<tr><td colspan="5">Loading...</td></tr>';
-                
+                resultsBody.innerHTML = `<tr><td colspan="${COL_SPAN}">Loading...</td></tr>`;
+
                 try {
-                    const res = await fetch(`/api/admin/results?secret=${encodeURIComponent(secret)}`);
+                    const res = await fetch(`/api/admin/results?secret=${encodeURIComponent(secret)}`, {
+                        credentials: 'same-origin',
+                        headers: { Accept: 'application/json' }
+                    });
+                    const raw = await res.text();
+
                     if (!res.ok) {
-                        const data = await res.json();
-                        throw new Error(data.error || 'Unauthorized or error');
+                        let msg = `Request failed (${res.status})`;
+                        try {
+                            const err = JSON.parse(raw);
+                            if (err.error) msg = err.error;
+                        } catch (_) { /* use default */ }
+                        throw new Error(msg);
                     }
-                    
-                    const data = await res.json();
+
+                    let data;
+                    try {
+                        data = JSON.parse(raw);
+                    } catch {
+                        throw new Error('Server returned invalid data (not JSON).');
+                    }
+                    if (!Array.isArray(data)) {
+                        throw new Error('Unexpected response: expected a list of results.');
+                    }
+
+                    if (data.length === 0) {
+                        resultsBody.innerHTML = `<tr><td colspan="${COL_SPAN}">No results found yet.</td></tr>`;
+                        return;
+                    }
+
                     resultsBody.innerHTML = '';
-                    
                     data.forEach(row => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                            <td>${row['Team Name'] || 'N/A'}</td>
-                            <td>${row['Round Number'] || 'N/A'}</td>
-                            <td>${row['Score'] || '0'}</td>
-                            <td>${row['Time Taken (s)'] || '0'}s</td>
-                            <td>${row['Timestamp'] ? new Date(row['Timestamp']).toLocaleString() : 'N/A'}</td>
+                            <td>${escapeCell(row['Team Name'] || 'N/A')}</td>
+                            <td>${escapeCell(row['Participant Name'] || '-')}</td>
+                            <td>${escapeCell(row['Round Number'] ?? 'N/A')}</td>
+                            <td>${escapeCell(row['Score'] ?? '0')}</td>
+                            <td>${escapeCell(row['Time Taken (s)'] != null ? row['Time Taken (s)'] + 's' : '0s')}</td>
+                            <td>${escapeCell(row['Timestamp'] ? new Date(row['Timestamp']).toLocaleString() : 'N/A')}</td>
                         `;
                         resultsBody.appendChild(tr);
                     });
-                    
-                    if (data.length === 0) {
-                        resultsBody.innerHTML = '<tr><td colspan="5">No results found yet.</td></tr>';
-                    }
                 } catch (e) {
-                    errorMsg.textContent = e.message;
-                    resultsBody.innerHTML = '<tr><td colspan="5">Error loading results.</td></tr>';
+                    errorMsg.textContent = e.message || String(e);
+                    resultsBody.innerHTML = `<tr><td colspan="${COL_SPAN}">Error loading results.</td></tr>`;
+                }
+            }
+
+            function parseFilenameFromDisposition(header) {
+                if (!header) return null;
+                const utf = /filename\*=UTF-8''([^;]+)/i.exec(header);
+                if (utf && utf[1]) return decodeURIComponent(utf[1].trim());
+                const simple = /filename="([^"]+)"/i.exec(header) || /filename=([^;]+)/i.exec(header);
+                if (simple && simple[1]) return simple[1].trim().replace(/^["']|["']$/g, '');
+                return null;
+            }
+
+            async function downloadFile(path, fallbackName) {
+                const secret = secretInput.value.trim();
+                if (!secret) return alert('Please enter secret code');
+
+                errorMsg.textContent = '';
+                try {
+                    const res = await fetch(`${path}?secret=${encodeURIComponent(secret)}`, {
+                        credentials: 'same-origin'
+                    });
+                    const ct = res.headers.get('content-type') || '';
+
+                    if (!res.ok) {
+                        if (ct.includes('application/json')) {
+                            const err = await res.json();
+                            throw new Error(err.error || `Download failed (${res.status})`);
+                        }
+                        const t = await res.text();
+                        throw new Error(t || `Download failed (${res.status})`);
+                    }
+
+                    const blob = await res.blob();
+                    const fromHeader = parseFilenameFromDisposition(res.headers.get('content-disposition'));
+                    const filename = fromHeader || fallbackName;
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                } catch (e) {
+                    errorMsg.textContent = e.message || String(e);
                 }
             }
 
             function downloadExcel() {
-                const secret = secretInput.value.trim();
-                if (!secret) return alert('Please enter secret code');
-                window.location.href = `/api/admin/download-excel?secret=${encodeURIComponent(secret)}`;
+                downloadFile('/api/admin/download-excel', 'results.xlsx');
             }
 
             function downloadCSV() {
+                downloadFile('/api/admin/download-csv', 'results.csv');
+            }
+
+            async function fetchLeaderboard() {
                 const secret = secretInput.value.trim();
                 if (!secret) return alert('Please enter secret code');
-                window.location.href = `/api/admin/download-csv?secret=${encodeURIComponent(secret)}`;
+
+                const round = leaderboardRoundSelect.value;
+                errorMsg.textContent = '';
+                leaderboardBodyAdmin.innerHTML = `<tr><td colspan="${LB_COL_SPAN}">Loading...</td></tr>`;
+
+                try {
+                    const adminUrl =
+                        `/api/admin/leaderboard?secret=${encodeURIComponent(secret)}&round=${encodeURIComponent(round)}`;
+                    let res = await fetch(adminUrl, {
+                        credentials: 'same-origin',
+                        headers: { Accept: 'application/json' }
+                    });
+                    let raw = await res.text();
+                    let usedPublicFallback = false;
+
+                    // 404 = running server is an older build without this route (redeploy / restart fixes it).
+                    if (res.status === 404) {
+                        usedPublicFallback = true;
+                        res = await fetch(`/api/leaderboard?round=${encodeURIComponent(round)}`, {
+                            credentials: 'same-origin',
+                            headers: { Accept: 'application/json' }
+                        });
+                        raw = await res.text();
+                    }
+
+                    if (!res.ok) {
+                        let msg = `Request failed (${res.status})`;
+                        try {
+                            const err = JSON.parse(raw);
+                            if (err.error) msg = err.error;
+                        } catch (_) { /* use default */ }
+                        throw new Error(msg);
+                    }
+
+                    let data;
+                    try {
+                        data = JSON.parse(raw);
+                    } catch {
+                        throw new Error('Server returned invalid data (not JSON).');
+                    }
+                    const list = data.leaderboard;
+                    if (!Array.isArray(list)) {
+                        throw new Error('Unexpected response: missing leaderboard array.');
+                    }
+
+                    const baseSubtitle =
+                        `Cumulative scores for rounds 1–${data.currentRound ?? round} (same as participant leaderboard).`;
+                    leaderboardSubtitleAdmin.textContent = usedPublicFallback
+                        ? `${baseSubtitle} Note: server has no /api/admin/leaderboard yet—using public API. Redeploy or restart the app to enable the admin-only route.`
+                        : baseSubtitle;
+
+                    if (list.length === 0) {
+                        leaderboardBodyAdmin.innerHTML = `<tr><td colspan="${LB_COL_SPAN}">No submissions yet for this view.</td></tr>`;
+                        return;
+                    }
+
+                    leaderboardBodyAdmin.innerHTML = '';
+                    list.forEach(entry => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${escapeCell(entry.rank)}</td>
+                            <td>${escapeCell(entry.teamName)}</td>
+                            <td>${escapeCell(entry.participantName || '-')}</td>
+                            <td>${escapeCell(entry.score)}</td>
+                            <td>${escapeCell(entry.timeTaken)}s</td>
+                        `;
+                        leaderboardBodyAdmin.appendChild(tr);
+                    });
+                } catch (e) {
+                    errorMsg.textContent = e.message || String(e);
+                    leaderboardBodyAdmin.innerHTML = `<tr><td colspan="${LB_COL_SPAN}">Error loading leaderboard.</td></tr>`;
+                }
             }
 
             viewBtn.addEventListener('click', fetchResults);
             excelBtn.addEventListener('click', downloadExcel);
             csvBtn.addEventListener('click', downloadCSV);
+            leaderboardBtn.addEventListener('click', fetchLeaderboard);
         });
     </script>
 </body>

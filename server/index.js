@@ -13,7 +13,7 @@ const mongoose = require('mongoose');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-const SECRET_CODE = (process.env.SECRET_CODE || 'SECRET123').trim(); // Kept for Admin Access
+const SECRET_CODE = (process.env.SECRET_CODE || 'RISHAV1306').trim(); // Admin dashboard (results / exports)
 const SESSION_SECRET = process.env.SESSION_SECRET || 'quiz-default-secret-key';
 
 const ROUND_SECRET_CODES = {
@@ -72,6 +72,59 @@ function transformResult(doc) {
         'Time Taken (s)': doc.timeTaken,
         'Timestamp': doc.timestamp ? doc.timestamp.toISOString() : new Date().toISOString()
     };
+}
+
+async function computeLeaderboard(roundQuery) {
+    const roundNumber = parseInt(String(roundQuery), 10);
+    if (roundQuery === undefined || roundQuery === null || String(roundQuery).trim() === '' ||
+        Number.isNaN(roundNumber) || roundNumber < 1) {
+        const err = new Error('Round number is required');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    console.log(`[Leaderboard] Fetching leaderboard for round ${roundNumber}`);
+
+    const results = await Result.find({ roundNumber: { $lte: roundNumber } }).lean();
+    console.log(`[Leaderboard] Found ${results.length} results for rounds 1-${roundNumber}`);
+
+    const teamStats = {};
+    results.sort((a, b) => a.roundNumber - b.roundNumber);
+
+    results.forEach(result => {
+        const key = result.teamName;
+        if (!teamStats[key]) {
+            teamStats[key] = {
+                teamName: result.teamName,
+                participantName: result.participantName,
+                totalScore: 0,
+                totalTime: 0
+            };
+        }
+        teamStats[key].totalScore += result.score;
+        teamStats[key].totalTime += result.timeTaken;
+        teamStats[key].participantName = result.participantName;
+        console.log(`[Leaderboard] Team: ${result.teamName}, Participant: ${result.participantName}, Round: ${result.roundNumber}, Score: ${result.score}, Team Total Score: ${teamStats[key].totalScore}`);
+    });
+
+    const leaderboardArray = Object.values(teamStats);
+    leaderboardArray.sort((a, b) => {
+        if (b.totalScore !== a.totalScore) {
+            return b.totalScore - a.totalScore;
+        }
+        return a.totalTime - b.totalTime;
+    });
+
+    const rankedResults = leaderboardArray.map((result, index) => ({
+        rank: index + 1,
+        teamName: result.teamName,
+        participantName: result.participantName,
+        score: result.totalScore,
+        timeTaken: result.totalTime.toFixed(2)
+    }));
+
+    console.log(`[Leaderboard] Returning ${rankedResults.length} ranked results`);
+    return { leaderboard: rankedResults, currentRound: roundNumber };
 }
 
 // Middleware
@@ -229,67 +282,33 @@ app.get('/api/questions', (req, res) => {
 
 // Get leaderboard for current round (cumulative across all completed rounds)
 app.get('/api/leaderboard', async (req, res) => {
-    const { round } = req.query;
-    
-    if (!round) {
-        return res.status(400).json({ error: 'Round number is required' });
-    }
-    
     try {
-        const roundNumber = parseInt(round);
-        console.log(`[Leaderboard] Fetching leaderboard for round ${roundNumber}`);
-        
-        // Fetch all results up to the current round
-        const results = await Result.find({ roundNumber: { $lte: roundNumber } }).lean();
-        console.log(`[Leaderboard] Found ${results.length} results for rounds 1-${roundNumber}`);
-        
-        // Calculate cumulative scores for each team
-        const teamStats = {};
-        
-        // Sort results by round number ascending to ensure we capture the latest participant
-        results.sort((a, b) => a.roundNumber - b.roundNumber);
-        
-        results.forEach(result => {
-            const key = result.teamName; // Aggregate by team name only
-            if (!teamStats[key]) {
-                teamStats[key] = {
-                    teamName: result.teamName,
-                    participantName: result.participantName,
-                    totalScore: 0,
-                    totalTime: 0
-                };
-            }
-            teamStats[key].totalScore += result.score;
-            teamStats[key].totalTime += result.timeTaken;
-            // Update participant name to the most recent submission
-            teamStats[key].participantName = result.participantName;
-            console.log(`[Leaderboard] Team: ${result.teamName}, Participant: ${result.participantName}, Round: ${result.roundNumber}, Score: ${result.score}, Team Total Score: ${teamStats[key].totalScore}`);
-        });
-        
-        // Convert to array and sort
-        const leaderboardArray = Object.values(teamStats);
-        
-        // Sort by total score descending, then total time ascending
-        leaderboardArray.sort((a, b) => {
-            if (b.totalScore !== a.totalScore) {
-                return b.totalScore - a.totalScore;
-            }
-            return a.totalTime - b.totalTime;
-        });
-        
-        // Add rank to each result
-        const rankedResults = leaderboardArray.map((result, index) => ({
-            rank: index + 1,
-            teamName: result.teamName,
-            participantName: result.participantName,
-            score: result.totalScore,
-            timeTaken: result.totalTime.toFixed(2)
-        }));
-        
-        console.log(`[Leaderboard] Returning ${rankedResults.length} ranked results`);
-        res.json({ leaderboard: rankedResults, currentRound: roundNumber });
+        const payload = await computeLeaderboard(req.query.round);
+        res.json(payload);
     } catch (err) {
+        if (err.statusCode === 400) {
+            return res.status(400).json({ error: err.message });
+        }
         console.error('Error fetching leaderboard:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// Admin: same leaderboard data, requires admin secret
+app.get('/api/admin/leaderboard', async (req, res) => {
+    const { secret } = req.query;
+    if (!secret || secret.trim() !== SECRET_CODE) {
+        console.warn('[Admin] Unauthorized leaderboard access attempt');
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+        const payload = await computeLeaderboard(req.query.round);
+        res.json(payload);
+    } catch (err) {
+        if (err.statusCode === 400) {
+            return res.status(400).json({ error: err.message });
+        }
+        console.error('Error fetching admin leaderboard:', err);
         res.status(500).json({ error: 'Database error' });
     }
 });
@@ -393,7 +412,7 @@ app.get('/api/admin/download-excel', async (req, res) => {
         
         console.log(`[Admin] Excel download initiated. Rows: ${formattedResults.length}`);
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=results.xlsx');
+        res.setHeader('Content-Disposition', 'attachment; filename="results.xlsx"');
         res.send(buffer);
     } catch (e) {
         console.error('[Admin] Excel generation error:', e);
@@ -412,19 +431,21 @@ app.get('/api/admin/download-csv', async (req, res) => {
         const docs = await Result.find().sort({ timestamp: 1 }).lean();
         const formattedResults = docs.map(transformResult);
 
-        if (formattedResults.length === 0) {
-            return res.status(404).send('No results yet');
-        }
+        const columnOrder = ['Team Name', 'Participant Name', 'Round Number', 'Score', 'Time Taken (s)', 'Timestamp'];
+        const headers = columnOrder.join(',');
+        const rows = formattedResults.length === 0
+            ? ''
+            : formattedResults.map(row =>
+                columnOrder.map(key => {
+                    const val = row[key] != null ? String(row[key]) : '';
+                    return `"${val.replace(/"/g, '""')}"`;
+                }).join(',')
+            ).join('\n');
 
-        const headers = Object.keys(formattedResults[0]).join(',');
-        const rows = formattedResults.map(row => 
-            Object.values(row).map(val => `"${val}"`).join(',')
-        ).join('\n');
-        
         console.log(`[Admin] CSV download initiated. Rows: ${formattedResults.length}`);
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', 'attachment; filename=results.csv');
-        res.send(headers + '\n' + rows);
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="results.csv"');
+        res.send(headers + (rows ? '\n' + rows : ''));
     } catch (e) {
         console.error('[Admin] CSV generation error:', e);
         res.status(500).send('Error generating CSV file');
