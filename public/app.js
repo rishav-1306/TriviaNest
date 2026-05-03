@@ -13,11 +13,17 @@ let timeLimit = 60;
 let startTime;
 let currentPage = 0; // For Round 2 pagination
 const questionsPerPage = 4;
+let leaderboardInterval; // For auto-refresh
+let tabSwitchCount = 0; // Track tab switches
+const maxTabSwitches = 3; // Max allowed tab switches before warning
+let visibilityChangeHandler; // Store handler to remove later
+let escKeyHandler; // Store ESC key handler for removal
 
 // DOM Elements
 const loginScreen = document.getElementById('login-screen');
 const quizScreen = document.getElementById('quiz-screen');
 const resultScreen = document.getElementById('result-screen');
+const leaderboardScreen = document.getElementById('leaderboard-screen');
 
 const loginForm = document.getElementById('login-form');
 const teamNameInput = document.getElementById('team-name');
@@ -40,6 +46,12 @@ const resultScore = document.getElementById('result-score');
 const resultTime = document.getElementById('result-time');
 const nextRoundBtn = document.getElementById('next-round-btn');
 const finishMsg = document.getElementById('finish-msg');
+const viewLeaderboardBtn = document.getElementById('view-leaderboard-btn');
+const leaderboardRound = document.getElementById('leaderboard-round');
+const leaderboardSubtitle = document.getElementById('leaderboard-subtitle');
+const leaderboardBody = document.getElementById('leaderboard-body');
+const backToResultBtn = document.getElementById('back-to-result-btn');
+const leaderboardNextRoundBtn = document.getElementById('leaderboard-next-round-btn');
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
@@ -181,6 +193,10 @@ async function fetchQuestions() {
         currentQuestionIndex = 0;
         currentPage = 0; // Reset pagination for Round 2
         userAnswers = {};
+        
+        // Enable security features
+        enterFullscreen();
+        setupTabSwitchDetection();
         
         renderQuestion();
         showScreen('quiz');
@@ -420,6 +436,11 @@ prevBtn.addEventListener('click', () => {
 // Submit Quiz
 async function submitQuiz() {
     clearInterval(timerInterval);
+    
+    // Disable security features
+    exitFullscreen();
+    removeTabSwitchDetection();
+    
     nextBtn.disabled = true;
     nextBtn.textContent = 'Submitting...';
 
@@ -445,20 +466,47 @@ async function submitQuiz() {
         resultTime.textContent = data.timeTaken;
         
         if (!data.passed) {
-            nextRoundBtn.classList.add('hidden');
-            finishMsg.classList.remove('hidden');
-            finishMsg.textContent = "You did not score enough to proceed to the next round.";
+            // For non-final rounds, show not enough score message
+            if (currentRound < totalRounds) {
+                nextRoundBtn.classList.add('hidden');
+                viewLeaderboardBtn.classList.add('hidden');
+                finishMsg.classList.remove('hidden');
+                finishMsg.textContent = "You did not score enough to proceed to the next round.";
+                showScreen('result');
+            } else {
+                // For final round, always show leaderboard regardless of score
+                nextRoundBtn.classList.add('hidden');
+                leaderboardNextRoundBtn.classList.add('hidden');
+                viewLeaderboardBtn.classList.add('hidden');
+                finishMsg.classList.remove('hidden');
+                finishMsg.textContent = "You have completed all rounds!";
+                
+                // Show final leaderboard
+                startLeaderboardAutoRefresh(currentRound);
+                showScreen('leaderboard');
+            }
         } else if (currentRound >= totalRounds) {
+            // Final round completed - show final leaderboard
             nextRoundBtn.classList.add('hidden');
+            leaderboardNextRoundBtn.classList.add('hidden');
+            viewLeaderboardBtn.classList.add('hidden');
             finishMsg.classList.remove('hidden');
-            finishMsg.textContent = "Congratulations! You have completed all rounds.";
+            finishMsg.textContent = "Congratulations! You have completed all rounds!";
+            
+            // Show final leaderboard
+            startLeaderboardAutoRefresh(currentRound);
+            showScreen('leaderboard');
         } else {
             nextRoundBtn.classList.remove('hidden');
+            viewLeaderboardBtn.classList.remove('hidden');
+            leaderboardNextRoundBtn.classList.remove('hidden');
             finishMsg.classList.add('hidden');
             nextRoundBtn.textContent = `Start Round ${currentRound + 1}`;
+            
+            // Automatically show leaderboard after submission
+            startLeaderboardAutoRefresh(currentRound);
+            showScreen('leaderboard');
         }
-
-        showScreen('result');
 
     } catch (error) {
         alert(error.message);
@@ -474,13 +522,181 @@ nextRoundBtn.addEventListener('click', () => {
     showScreen('login');
 });
 
+viewLeaderboardBtn.addEventListener('click', () => {
+    stopLeaderboardAutoRefresh();
+    startLeaderboardAutoRefresh(currentRound);
+    showScreen('leaderboard');
+});
+
+backToResultBtn.addEventListener('click', () => {
+    stopLeaderboardAutoRefresh();
+    showScreen('result');
+});
+
+leaderboardNextRoundBtn.addEventListener('click', () => {
+    stopLeaderboardAutoRefresh();
+    currentRound++;
+    roundIndicator.textContent = `Round ${currentRound}`;
+    loginError.textContent = '';
+    showScreen('login');
+});
+
 // Screen Management
 function showScreen(screenName) {
     loginScreen.classList.add('hidden');
     quizScreen.classList.add('hidden');
     resultScreen.classList.add('hidden');
+    leaderboardScreen.classList.add('hidden');
 
     if (screenName === 'login') loginScreen.classList.remove('hidden');
     if (screenName === 'quiz') quizScreen.classList.remove('hidden');
     if (screenName === 'result') resultScreen.classList.remove('hidden');
+    if (screenName === 'leaderboard') leaderboardScreen.classList.remove('hidden');
+}
+
+// Leaderboard Functions
+async function fetchLeaderboard(round) {
+    try {
+        console.log(`[Client] Fetching leaderboard for round ${round}`);
+        const res = await fetch(`${API_BASE}/leaderboard?round=${round}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch leaderboard');
+        console.log(`[Client] Leaderboard data received:`, data);
+        return data.leaderboard;
+    } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        return null;
+    }
+}
+
+async function displayLeaderboard(round) {
+    leaderboardRound.textContent = round;
+    
+    if (round >= totalRounds) {
+        leaderboardSubtitle.textContent = "Final Leaderboard - Cumulative scores from all rounds";
+    } else {
+        leaderboardSubtitle.textContent = `Cumulative scores across rounds 1 to ${round}`;
+    }
+    
+    const leaderboard = await fetchLeaderboard(round);
+    
+    if (!leaderboard) {
+        leaderboardBody.innerHTML = '<tr><td colspan="5">Failed to load leaderboard</td></tr>';
+        return;
+    }
+    
+    if (leaderboard.length === 0) {
+        leaderboardBody.innerHTML = '<tr><td colspan="5">No submissions yet</td></tr>';
+        return;
+    }
+    
+    leaderboardBody.innerHTML = '';
+    leaderboard.forEach(entry => {
+        const row = document.createElement('tr');
+        
+        // Add rank-specific classes
+        if (entry.rank === 1) row.classList.add('rank-1');
+        if (entry.rank === 2) row.classList.add('rank-2');
+        if (entry.rank === 3) row.classList.add('rank-3');
+        
+        // Highlight current user
+        if (entry.teamName === teamName && entry.participantName === participantName) {
+            row.classList.add('current-user');
+        }
+        
+        row.innerHTML = `
+            <td>${entry.rank}</td>
+            <td>${entry.teamName}</td>
+            <td>${entry.participantName || '-'}</td>
+            <td>${entry.score}</td>
+            <td>${entry.timeTaken}s</td>
+        `;
+        leaderboardBody.appendChild(row);
+    });
+}
+
+function startLeaderboardAutoRefresh(round) {
+    clearInterval(leaderboardInterval);
+    displayLeaderboard(round);
+    leaderboardInterval = setInterval(() => {
+        displayLeaderboard(round);
+    }, 5000); // Refresh every 5 seconds
+}
+
+function stopLeaderboardAutoRefresh() {
+    clearInterval(leaderboardInterval);
+}
+
+// Security Functions
+async function enterFullscreen() {
+    try {
+        if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+            await document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+            await document.documentElement.msRequestFullscreen();
+        }
+    } catch (error) {
+        console.warn('Fullscreen request failed:', error);
+    }
+}
+
+function exitFullscreen() {
+    try {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    } catch (error) {
+        console.warn('Fullscreen exit failed:', error);
+    }
+}
+
+function setupTabSwitchDetection() {
+    tabSwitchCount = 0;
+    
+    // Prevent ESC key from exiting fullscreen
+    escKeyHandler = (e) => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            console.warn('ESC key blocked during quiz');
+        }
+    };
+    
+    document.addEventListener('keydown', escKeyHandler);
+    
+    visibilityChangeHandler = () => {
+        if (document.hidden) {
+            tabSwitchCount++;
+            console.warn(`Tab switch detected. Auto-submitting quiz with current answers.`);
+            // Auto-submit with current answers
+            submitQuiz();
+        }
+    };
+    
+    document.addEventListener('visibilitychange', visibilityChangeHandler);
+    
+    // Also detect window blur (alt-tab, window switching)
+    window.addEventListener('blur', () => {
+        tabSwitchCount++;
+        console.warn(`Window blur detected. Auto-submitting quiz with current answers.`);
+        // Auto-submit with current answers
+        submitQuiz();
+    });
+}
+
+function removeTabSwitchDetection() {
+    if (visibilityChangeHandler) {
+        document.removeEventListener('visibilitychange', visibilityChangeHandler);
+        visibilityChangeHandler = null;
+    }
+    if (escKeyHandler) {
+        document.removeEventListener('keydown', escKeyHandler);
+        escKeyHandler = null;
+    }
 }

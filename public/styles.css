@@ -310,6 +310,129 @@ h1 {
     margin-bottom: 0.8rem;
 }
 
+/* Leaderboard */
+#leaderboard-subtitle {
+    text-align: center;
+    color: var(--text-color);
+    opacity: 0.8;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+#leaderboard-table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin: 2rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+#leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#leaderboard-table thead {
+    background: var(--google-blue);
+    color: white;
+}
+
+#leaderboard-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+#leaderboard-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1rem;
+}
+
+#leaderboard-table tr:hover {
+    background: #f0f7ff;
+}
+
+#leaderboard-table tr.current-user {
+    background: #fff3cd;
+    font-weight: bold;
+}
+
+#leaderboard-table tr.rank-1 {
+    background: #fff9c4;
+    border-left: 4px solid var(--google-yellow);
+}
+
+#leaderboard-table tr.rank-2 {
+    background: #e3f2fd;
+    border-left: 4px solid #b0bec5;
+}
+
+#leaderboard-table tr.rank-3 {
+    background: #ffe0b2;
+    border-left: 4px solid var(--google-red);
+}
+
+#leaderboard-refresh-info {
+    text-align: center;
+    color: var(--text-color);
+    opacity: 0.7;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Tab Warning Modal */
+.tab-warning-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.tab-warning-modal .modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.tab-warning-modal h2 {
+    color: var(--google-red);
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+.tab-warning-modal p {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+.tab-warning-modal .modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.tab-warning-modal .modal-buttons button {
+    flex: 1;
+    max-width: 200px;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .container {

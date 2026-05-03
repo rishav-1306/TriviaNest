@@ -227,6 +227,73 @@ app.get('/api/questions', (req, res) => {
     });
 });
 
+// Get leaderboard for current round (cumulative across all completed rounds)
+app.get('/api/leaderboard', async (req, res) => {
+    const { round } = req.query;
+    
+    if (!round) {
+        return res.status(400).json({ error: 'Round number is required' });
+    }
+    
+    try {
+        const roundNumber = parseInt(round);
+        console.log(`[Leaderboard] Fetching leaderboard for round ${roundNumber}`);
+        
+        // Fetch all results up to the current round
+        const results = await Result.find({ roundNumber: { $lte: roundNumber } }).lean();
+        console.log(`[Leaderboard] Found ${results.length} results for rounds 1-${roundNumber}`);
+        
+        // Calculate cumulative scores for each team
+        const teamStats = {};
+        
+        // Sort results by round number ascending to ensure we capture the latest participant
+        results.sort((a, b) => a.roundNumber - b.roundNumber);
+        
+        results.forEach(result => {
+            const key = result.teamName; // Aggregate by team name only
+            if (!teamStats[key]) {
+                teamStats[key] = {
+                    teamName: result.teamName,
+                    participantName: result.participantName,
+                    totalScore: 0,
+                    totalTime: 0
+                };
+            }
+            teamStats[key].totalScore += result.score;
+            teamStats[key].totalTime += result.timeTaken;
+            // Update participant name to the most recent submission
+            teamStats[key].participantName = result.participantName;
+            console.log(`[Leaderboard] Team: ${result.teamName}, Participant: ${result.participantName}, Round: ${result.roundNumber}, Score: ${result.score}, Team Total Score: ${teamStats[key].totalScore}`);
+        });
+        
+        // Convert to array and sort
+        const leaderboardArray = Object.values(teamStats);
+        
+        // Sort by total score descending, then total time ascending
+        leaderboardArray.sort((a, b) => {
+            if (b.totalScore !== a.totalScore) {
+                return b.totalScore - a.totalScore;
+            }
+            return a.totalTime - b.totalTime;
+        });
+        
+        // Add rank to each result
+        const rankedResults = leaderboardArray.map((result, index) => ({
+            rank: index + 1,
+            teamName: result.teamName,
+            participantName: result.participantName,
+            score: result.totalScore,
+            timeTaken: result.totalTime.toFixed(2)
+        }));
+        
+        console.log(`[Leaderboard] Returning ${rankedResults.length} ranked results`);
+        res.json({ leaderboard: rankedResults, currentRound: roundNumber });
+    } catch (err) {
+        console.error('Error fetching leaderboard:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
 // Submit answers
 app.post('/api/submit', async (req, res) => {
     if (!req.session.teamName || !req.session.currentRound) {

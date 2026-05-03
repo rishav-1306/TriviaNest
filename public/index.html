@@ -74,10 +74,52 @@
                 <p>Score: <span id="result-score"></span></p>
                 <p>Time Taken: <span id="result-time"></span> seconds</p>
             </div>
+            <button id="view-leaderboard-btn" class="btn btn-blue">View Leaderboard</button>
             <button id="next-round-btn" class="btn btn-yellow">Prepare for Next Round</button>
             <p id="finish-msg" class="hidden">Congratulations! You have completed all rounds.</p>
         </div>
+
+        <!-- Leaderboard Screen -->
+        <div id="leaderboard-screen" class="screen hidden">
+            <div class="watermark">GDGOC | ITER</div>
+            <h1>Leaderboard - Round <span id="leaderboard-round"></span></h1>
+            <p id="leaderboard-subtitle">Cumulative scores across all completed rounds</p>
+            <p id="leaderboard-refresh-info">Auto-refreshing every 5 seconds...</p>
+            <div id="leaderboard-table-container">
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Team Name</th>
+                            <th>Participant</th>
+                            <th>Score</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Leaderboard rows injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="footer">
+                <button id="back-to-result-btn" class="btn btn-green">Back to Results</button>
+                <button id="leaderboard-next-round-btn" class="btn btn-yellow">Next Round</button>
+            </div>
+        </div>
         
+    </div>
+
+    <!-- Tab Switch Warning Modal -->
+    <div id="tab-warning-modal" class="tab-warning-modal hidden">
+        <div class="modal-content">
+            <h2>⚠️ Tab Switching Detected</h2>
+            <p>Tab switching is not allowed during the quiz.</p>
+            <p>Please submit the quiz if you want to switch tabs.</p>
+            <div class="modal-buttons">
+                <button id="modal-submit-btn" class="btn btn-red">Submit Quiz</button>
+                <button id="modal-close-btn" class="btn btn-blue">Return to Quiz</button>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
