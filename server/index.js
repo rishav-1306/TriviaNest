@@ -172,10 +172,101 @@ function shuffle(array, seed = null) {
     return array;
 }
 
+// Rank-based eligibility cutoffs for each round
+const ROUND_CUTOFFS = {
+    "2": 0.80, // Top 80% of Round 1 participants qualify for Round 2
+    "3": 0.50  // Top 50% of Round 2 participants qualify for Round 3
+};
+
+// Check if a team is eligible for a given round based on previous round rankings
+async function checkEligibility(teamName, targetRound) {
+    const targetRoundNum = parseInt(targetRound);
+    
+    // Round 1 is always open to everyone
+    if (targetRoundNum === 1) return { eligible: true };
+
+    const previousRound = targetRoundNum - 1;
+    const cutoff = ROUND_CUTOFFS[targetRound];
+
+    // Get all results from the previous round
+    const previousResults = await Result.find({ roundNumber: previousRound }).lean();
+
+    if (previousResults.length === 0) {
+        return { eligible: false, reason: `No results found for Round ${previousRound}. Round ${previousRound} must be completed first.` };
+    }
+
+    // Check if this team has a result in the previous round
+    const teamResult = previousResults.find(r => r.teamName === teamName);
+    if (!teamResult) {
+        return { eligible: false, reason: `Your team did not participate in Round ${previousRound}.` };
+    }
+
+    // For Round 3 eligibility, compute cumulative scores (Round 1 + Round 2)
+    // For Round 2 eligibility, only use Round 1 scores
+    let teamScores = {};
+    
+    if (targetRoundNum === 2) {
+        // Rank by Round 1 score only
+        previousResults.forEach(r => {
+            if (!teamScores[r.teamName] || r.score > teamScores[r.teamName].score) {
+                teamScores[r.teamName] = { score: r.score, timeTaken: r.timeTaken };
+            }
+        });
+    } else if (targetRoundNum === 3) {
+        // Rank by cumulative score (Round 1 + Round 2)
+        const allResults = await Result.find({ roundNumber: { $lte: previousRound } }).lean();
+        allResults.forEach(r => {
+            if (!teamScores[r.teamName]) {
+                teamScores[r.teamName] = { score: 0, timeTaken: 0 };
+            }
+            teamScores[r.teamName].score += r.score;
+            teamScores[r.teamName].timeTaken += r.timeTaken;
+        });
+
+        // Only consider teams that actually completed Round 2
+        const round2Teams = new Set(previousResults.map(r => r.teamName));
+        Object.keys(teamScores).forEach(name => {
+            if (!round2Teams.has(name)) {
+                delete teamScores[name];
+            }
+        });
+    }
+
+    // Sort teams: higher score first, then lower time as tiebreaker
+    const sortedTeams = Object.entries(teamScores)
+        .map(([name, data]) => ({ teamName: name, ...data }))
+        .sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return a.timeTaken - b.timeTaken;
+        });
+
+    const totalTeams = sortedTeams.length;
+    const qualifyingCount = Math.ceil(totalTeams * cutoff);
+
+    // Find the team's rank
+    const teamRank = sortedTeams.findIndex(t => t.teamName === teamName) + 1;
+
+    if (teamRank === 0) {
+        return { eligible: false, reason: `Your team was not found in the rankings.` };
+    }
+
+    if (teamRank <= qualifyingCount) {
+        return { eligible: true, rank: teamRank, totalTeams, qualifyingCount };
+    } else {
+        return {
+            eligible: false,
+            rank: teamRank,
+            totalTeams,
+            qualifyingCount,
+            reason: `Your team ranked ${teamRank} out of ${totalTeams}. Only the top ${Math.round(cutoff * 100)}% (${qualifyingCount} teams) qualify for Round ${targetRound}.`
+        };
+    }
+}
+
 // API Endpoints
 
 // Login / Validate Code
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { teamName, participantName, secretCode, round } = req.body;
 
     const roundStr = String(round || 1);
@@ -192,6 +283,21 @@ app.post('/api/login', (req, res) => {
 
     if (!teamName) {
         return res.status(400).json({ error: 'Team name is required' });
+    }
+
+    // Check rank-based eligibility for Rounds 2 and 3
+    if (roundStr !== "1") {
+        try {
+            const eligibility = await checkEligibility(teamName, roundStr);
+            if (!eligibility.eligible) {
+                console.log(`[Login] Team "${teamName}" not eligible for Round ${roundStr}: ${eligibility.reason}`);
+                return res.status(403).json({ error: eligibility.reason });
+            }
+            console.log(`[Login] Team "${teamName}" eligible for Round ${roundStr} (Rank ${eligibility.rank}/${eligibility.totalTeams}, Top ${eligibility.qualifyingCount} qualify)`);
+        } catch (err) {
+            console.error('[Login] Eligibility check error:', err);
+            return res.status(500).json({ error: 'Failed to check eligibility. Please try again.' });
+        }
     }
 
     if (req.session.submittedRounds && req.session.submittedRounds.includes(roundStr)) {
@@ -246,9 +352,9 @@ app.post('/api/login', (req, res) => {
 // Get session state to handle page refreshes
 app.get('/api/session', (req, res) => {
     if (req.session.teamName && req.session.currentRound && req.session.submittedRounds && !req.session.submittedRounds.includes(req.session.currentRound)) {
-        res.json({ active: true, teamName: req.session.teamName, participantName: req.session.participantName, round: req.session.currentRound, submittedRounds: req.session.submittedRounds, failed: req.session.failed });
+        res.json({ active: true, teamName: req.session.teamName, participantName: req.session.participantName, round: req.session.currentRound, submittedRounds: req.session.submittedRounds });
     } else {
-        res.json({ active: false, teamName: req.session.teamName, participantName: req.session.participantName, submittedRounds: req.session.submittedRounds, failed: req.session.failed });
+        res.json({ active: false, teamName: req.session.teamName, participantName: req.session.participantName, submittedRounds: req.session.submittedRounds });
     }
 });
 
@@ -291,6 +397,21 @@ app.get('/api/leaderboard', async (req, res) => {
         }
         console.error('Error fetching leaderboard:', err);
         res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// Check eligibility for a specific team and round
+app.get('/api/check-eligibility', async (req, res) => {
+    const { teamName, round } = req.query;
+    if (!teamName || !round) {
+        return res.status(400).json({ error: 'teamName and round query parameters are required' });
+    }
+    try {
+        const eligibility = await checkEligibility(teamName, String(round));
+        res.json(eligibility);
+    } catch (err) {
+        console.error('[Eligibility] Check error:', err);
+        res.status(500).json({ error: 'Failed to check eligibility' });
     }
 });
 
@@ -339,12 +460,9 @@ app.post('/api/submit', async (req, res) => {
         }
     }
 
-    // Check threshold (50%)
+    // Eligibility is now determined by rank-based cutoffs checked at next round login
     const totalQuestions = Object.keys(correctAnswers).length;
-    const passed = score >= (totalQuestions / 2);
-    if (!passed) {
-        req.session.failed = true;
-    }
+    const passed = true; // Eligibility for next round is checked when they attempt to login
 
     // Save to MongoDB
     const resultDoc = new Result({
