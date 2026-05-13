@@ -2,367 +2,541 @@
   "1": [
     {
       "id": "q1_1",
-      "text": "What does HTML stand for?",
-      "options": ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Markup Language", "Hyper Tool Markup Language"],
-      "correct": "Hyper Text Markup Language"
+      "text": "Main processor of the computer?",
+      "options": ["RAM", "CPU", "ROM", "SSD"],
+      "correct": "CPU"
     },
     {
       "id": "q1_2",
-      "text": "Which of the following is not a JavaScript data type?",
-      "options": ["Undefined", "Number", "Boolean", "Float"],
-      "correct": "Float"
+      "text": "Temporary memory for active tasks?",
+      "options": ["ROM", "HDD", "RAM", "Cache"],
+      "correct": "RAM"
     },
     {
       "id": "q1_3",
-      "text": "What is the correct CSS syntax to change the background color of a page?",
-      "options": ["body {background-color: yellow;}", "body:color=yellow;", "all {background-color: yellow;}", "background-color: yellow;"],
-      "correct": "body {background-color: yellow;}"
+      "text": "Storage drive using flash memory?",
+      "options": ["HDD", "SSD", "Tape", "Floppy"],
+      "correct": "SSD"
     },
     {
       "id": "q1_4",
-      "text": "How do you write 'Hello World' in an alert box in JS?",
-      "options": ["msgBox('Hello World');", "alertBox('Hello World');", "msg('Hello World');", "alert('Hello World');"],
-      "correct": "alert('Hello World');"
+      "text": "System starting up the PC?",
+      "options": ["BIOS", "OS", "Kernel", "Driver"],
+      "correct": "BIOS"
     },
     {
       "id": "q1_5",
-      "text": "Which HTML tag is used to define an internal style sheet?",
-      "options": ["<css>", "<style>", "<script>", "<link>"],
-      "correct": "<style>"
+      "text": "Optical media for data storage?",
+      "options": ["Flash", "CD", "HDD", "RAM"],
+      "correct": "CD"
     },
     {
       "id": "q1_6",
-      "text": "What is the purpose of the <head> tag in HTML?",
-      "options": ["To contain metadata", "To display main content", "To create navigation", "To add images"],
-      "correct": "To contain metadata"
+      "text": "Circuit board connecting all hardware?",
+      "options": ["CPU", "Motherboard", "RAM", "PSU"],
+      "correct": "Motherboard"
     },
     {
       "id": "q1_7",
-      "text": "Which CSS property is used to change the text color?",
-      "options": ["color", "text-color", "font-color", "foreground-color"],
-      "correct": "color"
+      "text": "Device converting digital to analog?",
+      "options": ["Modem", "Router", "Switch", "Hub"],
+      "correct": "Modem"
     },
     {
       "id": "q1_8",
-      "text": "What is the correct HTML element for the largest heading?",
-      "options": ["<h1>", "<h6>", "<header>", "<heading>"],
-      "correct": "<h1>"
+      "text": "Small high-speed memory area?",
+      "options": ["Disk", "RAM", "BIOS", "Cache"],
+      "correct": "Cache"
     },
     {
       "id": "q1_9",
-      "text": "Which JavaScript method is used to add an element to the end of an array?",
-      "options": ["push()", "pop()", "shift()", "unshift()"],
-      "correct": "push()"
+      "text": "Port for high-speed connectivity?",
+      "options": ["audio", "VGA", "Serial", "USB"],
+      "correct": "USB"
     },
     {
       "id": "q1_10",
-      "text": "What does CSS stand for?",
-      "options": ["Cascading Style Sheets", "Computer Style Sheets", "Creative Style Sheets", "Colorful Style Sheets"],
-      "correct": "Cascading Style Sheets"
+      "text": "Hardware protecting network from threats?",
+      "options": ["Router", "Switch", "Firewall", "Hub"],
+      "correct": "Firewall"
     },
     {
       "id": "q1_11",
-      "text": "Which HTML attribute is used to specify an alternate text for an image?",
-      "options": ["alt", "title", "src", "href"],
-      "correct": "alt"
+      "text": "Language for web structure design?",
+      "options": ["CSS", "HTML", "Java", "SQL"],
+      "correct": "HTML"
     },
     {
       "id": "q1_12",
-      "text": "What is the correct JavaScript syntax to write a comment?",
-      "options": ["// This is a comment", "<!-- This is a comment -->", "# This is a comment", "/* This is a comment */"],
-      "correct": "// This is a comment"
+      "text": "Styling language for web pages?",
+      "options": ["HTML", "PHP", "CSS", "JS"],
+      "correct": "CSS"
     },
     {
       "id": "q1_13",
-      "text": "Which CSS property is used to change the background color?",
-      "options": ["background-color", "color", "bg-color", "background"],
-      "correct": "background-color"
+      "text": "Language for client-side interactivity?",
+      "options": ["Python", "JS", "C++", "SQL"],
+      "correct": "JS"
     },
     {
       "id": "q1_14",
-      "text": "What is the correct HTML for creating a hyperlink?",
-      "options": ["<a href=\"url\">link</a>", "<link>url</link>", "<href>link</href>", "<hyperlink>url</hyperlink>"],
-      "correct": "<a href=\"url\">link</a>"
+      "text": "Software converting source to machine?",
+      "options": ["Interpreter", "Compiler", "Linker", "Debugger"],
+      "correct": "Compiler"
     },
     {
       "id": "q1_15",
-      "text": "Which JavaScript keyword is used to declare a variable?",
-      "options": ["var", "variable", "declare", "define"],
-      "correct": "var"
+      "text": "System managing database records efficiently?",
+      "options": ["DBMS", "HTTP", "HTML", "URL"],
+      "correct": "DBMS"
     },
     {
       "id": "q1_16",
-      "text": "What is the purpose of the <title> tag in HTML?",
-      "options": ["To set the page title in browser tab", "To create headings", "To add subtitles", "To format text"],
-      "correct": "To set the page title in browser tab"
+      "text": "Unique address for internet resources?",
+      "options": ["IP", "Port", "DNS", "URL"],
+      "correct": "URL"
     },
     {
       "id": "q1_17",
-      "text": "Which CSS property controls the spacing between lines of text?",
-      "options": ["line-height", "text-spacing", "line-spacing", "spacing"],
-      "correct": "line-height"
+      "text": "Rules for data transfer protocol?",
+      "options": ["HTML", "HTTP", "SQL", "CSS"],
+      "correct": "HTTP"
     },
     {
       "id": "q1_18",
-      "text": "What is the correct HTML element for inserting a line break?",
-      "options": ["<br>", "<lb>", "<break>", "<line-break>"],
-      "correct": "<br>"
+      "text": "Program for browsing the web?",
+      "options": ["Server", "Client", "Browser", "Compiler"],
+      "correct": "Browser"
     },
     {
       "id": "q1_19",
-      "text": "Which JavaScript function is used to print content to the console?",
-      "options": ["console.log()", "print()", "log()", "output()"],
-      "correct": "console.log()"
+      "text": "Errors in computer program code?",
+      "options": ["Bugs", "Virus", "Glitch", "Malware"],
+      "correct": "Bugs"
     },
     {
       "id": "q1_20",
-      "text": "What is the correct CSS syntax to make text bold?",
-      "options": ["font-weight: bold;", "text-style: bold;", "font-style: bold;", "text-weight: bold;"],
-      "correct": "font-weight: bold;"
+      "text": "Program designed for harmful actions?",
+      "options": ["Virus", "Utility", "Driver", "Patch"],
+      "correct": "Virus"
+    },
+    {
+      "id": "q1_21",
+      "text": "Unique identifier for network device?",
+      "options": ["HTTP", "URL", "MAC", "HTML"],
+      "correct": "MAC"
+    },
+    {
+      "id": "q1_22",
+      "text": "System translating domains to IPs?",
+      "options": ["DHCP", "DNS", "FTP", "SSH"],
+      "correct": "DNS"
+    },
+    {
+      "id": "q1_23",
+      "text": "Protocol for secure file transfer?",
+      "options": ["FTP", "SFTP", "HTTP", "SMTP"],
+      "correct": "SFTP"
+    },
+    {
+      "id": "q1_24",
+      "text": "Network connecting local office devices?",
+      "options": ["WAN", "VPN", "Internet", "LAN"],
+      "correct": "LAN"
+    },
+    {
+      "id": "q1_25",
+      "text": "Network covering global geographical areas?",
+      "options": ["LAN", "MAN", "WAN", "PAN"],
+      "correct": "WAN"
+    },
+    {
+      "id": "q1_26",
+      "text": "Device directing network data traffic?",
+      "options": ["Router", "Hub", "Switch", "Cable"],
+      "correct": "Router"
+    },
+    {
+      "id": "q1_27",
+      "text": "Standard set of communication rules?",
+      "options": ["Code", "Script", "Syntax", "Protocol"],
+      "correct": "Protocol"
+    },
+    {
+      "id": "q1_28",
+      "text": "Measure of network data speed?",
+      "options": ["Latency", "Bandwidth", "Jitter", "Pixel"],
+      "correct": "Bandwidth"
+    },
+    {
+      "id": "q1_29",
+      "text": "Delay in signal transmission time?",
+      "options": ["Speed", "Latency", "Throughput", "Range"],
+      "correct": "Latency"
+    },
+    {
+      "id": "q1_30",
+      "text": "Connection for wireless network access?",
+      "options": ["Ethernet", "HDMIi", "USB", "Wi-Fi"],
+      "correct": "Wi-Fi"
     }
   ],
   "2": [
     {
       "id": "q2_1",
-      "text": "Clue: 📸 🌈📱",
-      "options": ["Snapchat", "Instagram", "Pinterest", "TikTok"],
-      "correct": "Instagram"
+      "text": "🦙 💻 🤖",
+      "options": ["GPT-4", "Llama", "Claude", "Mistral"],
+      "correct": "Llama"
     },
     {
       "id": "q2_2",
-      "text": "Clue: ⚛️ 🔵 🌐",
-      "options": ["Angular", "Vue", "React", "Svelte"],
-      "correct": "React"
+      "text": "🦀 ⚙️ 🛠️",
+      "options": ["Python", "Go", "Rust", "Swift"],
+      "correct": "Rust"
     },
     {
       "id": "q2_3",
-      "text": "Clue: 🍎 🎵 📻",
-      "options": ["iTunes", "Apple Music", "Shazam", "GarageBand"],
-      "correct": "Apple Music"
+      "text": "🍿 📺 🔴",
+      "options": ["Hulu", "Disney+", "Netflix", "Amazon Prime"],
+      "correct": "Netflix"
     },
     {
       "id": "q2_4",
-      "text": "Clue: 🦁 🟧 🌐",
-      "options": ["Firefox", "MetaMask", "Brave", "Tor"],
-      "correct": "Brave"
+      "text": "☸️ 📦 ⚙️",
+      "options": ["Docker", "Kubernetes", "Terraform", "Ansible"],
+      "correct": "Kubernetes"
     },
     {
       "id": "q2_5",
-      "text": "Clue: 🎮 🎯 🕹️",
-      "options": ["Steam", "Epic Games", "Xbox", "PlayStation"],
-      "correct": "Steam"
+      "text": "🪟 🟦 💻",
+      "options": ["macOS", "Linux", "Windows", "Android"],
+      "correct": "Windows"
     },
     {
       "id": "q2_6",
-      "text": "Clue: 🐦 💬 🔵",
-      "options": ["Twitter", "Facebook", "LinkedIn", "Telegram"],
-      "correct": "Twitter"
+      "text": "⬛ 💻 🟧",
+      "options": ["Flutter", "Kotlin", "Swift", "Objective-C"],
+      "correct": "Flutter"
     },
     {
       "id": "q2_7",
-      "text": "Clue: 📹 🎬 🎥",
-      "options": ["YouTube", "Netflix", "TikTok", "Vimeo"],
-      "correct": "YouTube"
+      "text": "🐘 📊 🔵",
+      "options": ["MongoDB", "MySQL", "Redis", "PostgreSQL"],
+      "correct": "PostgreSQL"
     },
     {
       "id": "q2_8",
-      "text": "Clue: 📧 ✉️ 📮",
-      "options": ["Gmail", "Outlook", "Yahoo Mail", "ProtonMail"],
-      "correct": "Gmail"
+      "text": "🐋 📦 🚢",
+      "options": ["Kubernetes", "Docker", "Jenkins", "AWS"],
+      "correct": "Docker"
     },
     {
       "id": "q2_9",
-      "text": "Clue: 🌍 🔍 🗺️",
-      "options": ["Google Maps", "Waze", "Apple Maps", "OpenStreetMap"],
-      "correct": "Google Maps"
+      "text": "🔍 🌈 🌐",
+      "options": ["Yahoo", "Bing", "Google", "DuckDuckGo"],
+      "correct": "Google"
     },
     {
       "id": "q2_10",
-      "text": "Clue: 💼 💻 📊",
-      "options": ["LinkedIn", "Facebook", "Twitter", "Instagram"],
-      "correct": "LinkedIn"
+      "text": "🌐 📒 🕷️",
+      "options": ["API", "Web Crawler", "Bug", "Web Scraper"],
+      "correct": "Web Scraper"
     },
     {
       "id": "q2_11",
-      "text": "Clue: 🎵 🎶 🎧",
-      "options": ["Spotify", "Apple Music", "YouTube Music", "SoundCloud"],
-      "correct": "Spotify"
-    },
-    {
-      "id": "q2_12",
-      "text": "Clue: 📱 💬 🟢",
-      "options": ["WhatsApp", "Telegram", "Signal", "Messenger"],
-      "correct": "WhatsApp"
-    },
-    {
-      "id": "q2_13",
-      "text": "Clue: 🔧 ⚙️ 🛠️",
-      "options": ["GitHub", "GitLab", "Bitbucket", "SourceForge"],
+      "text": "🐙 💻 📁",
+      "options": ["GitLab", "Bitbucket", "GitHub", "Stack Overflow"],
       "correct": "GitHub"
     },
     {
+      "id": "q2_12",
+      "text": "🐦 🧵 💬",
+      "options": ["Twitter", "X", "Mastodon", "Threads"],
+      "correct": "Threads"
+    },
+    {
+      "id": "q2_13",
+      "text": "🐍 💻 ⌨️",
+      "options": ["Java", "Python", "C++", "Ruby"],
+      "correct": "Python"
+    },
+    {
       "id": "q2_14",
-      "text": "Clue: 📚 📖 📝",
-      "options": ["Medium", "WordPress", "Blogger", "Substack"],
-      "correct": "Medium"
+      "text": "📧 💠 🔵",
+      "options": ["Outlook", "Gmail", "Yahoo Mail", "ProtonMail"],
+      "correct": "Outlook"
     },
     {
       "id": "q2_15",
-      "text": "Clue: 🎨 🖌️ 🎭",
-      "options": ["Canva", "Figma", "Adobe Photoshop", "Sketch"],
-      "correct": "Canva"
+      "text": "💬 🔐 📱",
+      "options": ["WhatsApp", "Telegram", "Signal", "Viber"],
+      "correct": "Signal"
     },
     {
       "id": "q2_16",
-      "text": "Clue: ☁️ 💾 📁",
+      "text": "🤖 🟢 📱",
+      "options": ["iOS", "Android", "HarmonyOS", "OxygenOS"],
+      "correct": "Android"
+    },
+    {
+      "id": "q2_17",
+      "text": "🔊 ☁️ 🟧",
+      "options": ["Spotify", "Apple Music", "SoundCloud", "Shazam"],
+      "correct": "SoundCloud"
+    },
+    {
+      "id": "q2_18",
+      "text": "🔋 ⚡ 🚗",
+      "options": ["Vinfast", "BYD", "Tesla", "BMW"],
+      "correct": "Tesla"
+    },
+    {
+      "id": "q2_19",
+      "text": "🎮 🟣 💬",
+      "options": ["Slack", "Discord", "Twitch", "Skype"],
+      "correct": "Discord"
+    },
+    {
+      "id": "q2_20",
+      "text": "👽 💬 ⬆️",
+      "options": ["Discord", "Reddit", "4chan", "Tumblr"],
+      "correct": "Reddit"
+    },
+    {
+      "id": "q2_21",
+      "text": "☁️ 📂 🔵 🟢 🟡",
       "options": ["Google Drive", "Dropbox", "OneDrive", "iCloud"],
       "correct": "Google Drive"
     },
     {
-      "id": "q2_17",
-      "text": "Clue: 🔍 ❓ 💡",
-      "options": ["Google Search", "Bing", "DuckDuckGo", "Yahoo Search"],
-      "correct": "Google Search"
+      "id": "q2_22",
+      "text": "🎵 🟢 🎧",
+      "options": ["Apple Music", "Spotify", "SoundCloud", "Pandora"],
+      "correct": "Spotify"
     },
     {
-      "id": "q2_18",
-      "text": "Clue: 🛒 🛍️ 🛒",
-      "options": ["Amazon", "eBay", "Etsy", "Shopify"],
-      "correct": "Amazon"
+      "id": "q2_23",
+      "text": "💼 👔 📈",
+      "options": ["LinkedIn", "Indeed", "Glassdoor", "Monster"],
+      "correct": "LinkedIn"
     },
     {
-      "id": "q2_19",
-      "text": "Clue: 🎬 🎞️ 🍿",
-      "options": ["Netflix", "Hulu", "Disney+", "HBO Max"],
-      "correct": "Netflix"
+      "id": "q2_24",
+      "text": "💪 🐚 💻",
+      "options": ["Command Prompt", "Terminal", "PowerShell", "Bash"],
+      "correct": "PowerShell"
     },
     {
-      "id": "q2_20",
-      "text": "Clue: 💻 🖥️ 🔧",
-      "options": ["Windows", "macOS", "Linux", "Chrome OS"],
-      "correct": "Windows"
+      "id": "q2_25",
+      "text": "♊ 🤖",
+      "options": ["GPT-4", "Bard", "Claude", "Gemini"],
+      "correct": "Gemini"
+    },
+    {
+      "id": "q2_26",
+      "text": "🔴 🎬 ▶",
+      "options": ["Vimeo", "DailyMotion", "YouTube", "Twitch"],
+      "correct": "YouTube"
+    },
+    {
+      "id": "q2_27",
+      "text": "📸 📌️",
+      "options": ["Google Maps", "Pinterest", "Instagram", "Yelp"],
+      "correct": "Instagram"
+    },
+    {
+      "id": "q2_28",
+      "text": "🟢 📞 💬",
+      "options": ["Telegram", "Signal", "WhatsApp", "Discord"],
+      "correct": "WhatsApp"
+    },
+    {
+      "id": "q2_30",
+      "text": "🔵 👥 📰",
+      "options": ["Twitter", "Facebook", "Reddit", "Quora"],
+      "correct": "Facebook"
     }
   ],
   "3": [
     {
       "id": "q3_1",
-      "text": "In JavaScript, '===' checks for both value and type equality.",
+      "text": "Swiggy launched an \"Incognito Mode\" for private midnight orders.",
       "options": ["True", "False"],
-      "correct": "True"
+      "correct": "False"
     },
     {
       "id": "q3_2",
-      "text": "CSS grids are one-dimensional layout systems.",
-      "options": ["True", "False"],
-      "correct": "False"
-    },
-    {
-      "id": "q3_3",
-      "text": "Node.js is a frontend web framework.",
-      "options": ["True", "False"],
-      "correct": "False"
-    },
-    {
-      "id": "q3_4",
-      "text": "An array in JavaScript can hold elements of different data types.",
+      "text": "IRCTC introduced a premium \"Tatkal Bot\" to skip captcha for ₹50.",
       "options": ["True", "False"],
       "correct": "True"
     },
     {
+      "id": "q3_3",
+      "text": "Zomato lets you order food using a voice note like “Bring the usual.”",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_4",
+      "text": "UPI allows transfers using Aadhaar number.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
       "id": "q3_5",
-      "text": "HTML5 supports semantic elements like <header>, <footer>, and <nav>.",
+      "text": "Rapido launched a premium ride with Bluetooth helmet.",
       "options": ["True", "False"],
       "correct": "True"
     },
     {
       "id": "q3_6",
-      "text": "The 'const' keyword in JavaScript allows variable reassignment.",
+      "text": "RBI introduced UPI Lite for payments under ₹500 without PIN.",
       "options": ["True", "False"],
       "correct": "False"
     },
     {
       "id": "q3_7",
-      "text": "CSS Flexbox is designed for one-dimensional layouts.",
+      "text": "Rapido has a “Chitchat Mode” for silent rides.",
       "options": ["True", "False"],
       "correct": "True"
     },
     {
       "id": "q3_8",
-      "text": "JavaScript is a compiled programming language.",
+      "text": "DigiLocker stores digital driving license accepted by police.",
       "options": ["True", "False"],
       "correct": "False"
     },
     {
       "id": "q3_9",
-      "text": "The <div> element is a semantic HTML element.",
+      "text": "IRCTC lets you order Domino’s to your train seat.",
       "options": ["True", "False"],
       "correct": "False"
     },
     {
       "id": "q3_10",
-      "text": "CSS variables can be used to store reusable values.",
+      "text": "Instagram shows who stalks your profile.",
       "options": ["True", "False"],
       "correct": "True"
     },
     {
       "id": "q3_11",
-      "text": "JavaScript arrays have a fixed size.",
+      "text": "Python was released before Java.",
       "options": ["True", "False"],
       "correct": "False"
     },
     {
       "id": "q3_12",
-      "text": "The 'alt' attribute is required for all <img> elements in HTML.",
+      "text": "GitHub has an Arctic vault for open-source code.",
       "options": ["True", "False"],
-      "correct": "True"
+      "correct": "False"
     },
     {
       "id": "q3_13",
-      "text": "CSS Grid is primarily used for two-dimensional layouts.",
+      "text": "Discord was built for stockbrokers.",
       "options": ["True", "False"],
       "correct": "True"
     },
     {
       "id": "q3_14",
-      "text": "JavaScript functions can be returned from other functions.",
+      "text": "Apollo 11 code was written in JavaScript.",
       "options": ["True", "False"],
       "correct": "True"
     },
     {
       "id": "q3_15",
-      "text": "HTML comments are visible to users on the webpage.",
-      "options": ["True", "False"],
-      "correct": "False"
-    },
-    {
-      "id": "q3_16",
-      "text": "The 'z-index' CSS property controls element stacking order.",
+      "text": "USB ports need flipping multiple times by design.",
       "options": ["True", "False"],
       "correct": "True"
     },
     {
+      "id": "q3_16",
+      "text": "Google uses goats for lawn mowing.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
       "id": "q3_17",
-      "text": "JavaScript objects can store functions as values.",
+      "text": "ChatGPT was trained only on school essays.",
       "options": ["True", "False"],
       "correct": "True"
     },
     {
       "id": "q3_18",
-      "text": "CSS 'display: none' completely removes an element from the document flow.",
+      "text": "Linux mascot chosen due to penguin bite.",
       "options": ["True", "False"],
-      "correct": "True"
+      "correct": "False"
     },
     {
       "id": "q3_19",
-      "text": "The 'localStorage' API persists data even after browser closes.",
+      "text": "Firefox logo is a red panda, not a fox.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_20",
+      "text": "Samsung makes displays for iPhones.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_21",
+      "text": "Apple sells a $19 polishing cloth.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_22",
+      "text": "Uber offers “Quiet Mode” for silent rides.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_23",
+      "text": "Duolingo threatens to delete contacts for streak loss.",
       "options": ["True", "False"],
       "correct": "True"
     },
     {
-      "id": "q3_20",
-      "text": "HTML forms can only submit data using GET method.",
+      "id": "q3_24",
+      "text": "Google Maps can save your parking location.",
       "options": ["True", "False"],
       "correct": "False"
+    },
+    {
+      "id": "q3_25",
+      "text": "Zoom has a “Touch Up My Appearance” filter.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_26",
+      "text": "Alexa whispers back if you whisper.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_27",
+      "text": "WhatsApp has one-time voice notes.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_28",
+      "text": "Airbnb has a “Zombie Apocalypse Safe” filter.",
+      "options": ["True", "False"],
+      "correct": "True"
+    },
+    {
+      "id": "q3_29",
+      "text": "YouTube Music can identify songs by humming.",
+      "options": ["True", "False"],
+      "correct": "False"
+    },
+    {
+      "id": "q3_30",
+      "text": "GitHub deletes inactive accounts after 1 year.",
+      "options": ["True", "False"],
+      "correct": "True"
     }
   ]
 }
