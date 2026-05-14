@@ -92,14 +92,7 @@ async function checkSession() {
         } else {
             // Check if team name is in session and there's a submitted round, meaning we should advance currentRound on refresh
             if (data.teamName && data.submittedRounds && data.submittedRounds.length > 0) {
-                 if (data.failed) {
-                     nextRoundBtn.classList.add('hidden');
-                     finishMsg.classList.remove('hidden');
-                     finishMsg.textContent = "You did not score enough to proceed to the next round.";
-                     showScreen('result');
-                     return;
-                 }
-                 const highestSubmitted = Math.max(...data.submittedRounds.map(r => parseInt(r)));
+             const highestSubmitted = Math.max(...data.submittedRounds.map(r => parseInt(r)));
                  if (highestSubmitted < totalRounds) {
                      currentRound = highestSubmitted + 1;
                      teamName = data.teamName;
@@ -465,27 +458,7 @@ async function submitQuiz() {
         resultScore.textContent = data.score;
         resultTime.textContent = data.timeTaken;
         
-        if (!data.passed) {
-            // For non-final rounds, show not enough score message
-            if (currentRound < totalRounds) {
-                nextRoundBtn.classList.add('hidden');
-                viewLeaderboardBtn.classList.add('hidden');
-                finishMsg.classList.remove('hidden');
-                finishMsg.textContent = "You did not score enough to proceed to the next round.";
-                showScreen('result');
-            } else {
-                // For final round, always show leaderboard regardless of score
-                nextRoundBtn.classList.add('hidden');
-                leaderboardNextRoundBtn.classList.add('hidden');
-                viewLeaderboardBtn.classList.add('hidden');
-                finishMsg.classList.remove('hidden');
-                finishMsg.textContent = "You have completed all rounds!";
-                
-                // Show final leaderboard
-                startLeaderboardAutoRefresh(currentRound);
-                showScreen('leaderboard');
-            }
-        } else if (currentRound >= totalRounds) {
+        if (currentRound >= totalRounds) {
             // Final round completed - show final leaderboard
             nextRoundBtn.classList.add('hidden');
             leaderboardNextRoundBtn.classList.add('hidden');
